@@ -66,11 +66,11 @@ void i8259_init(void) {
 void enable_irq(uint32_t irq_num) {
 	uint8_t interrupt_unmask;
 	if(irq_num >= 0 && irq_num <= 7) {
-		interrupt_mask = ~(0x00000001 << irq_num);
+		interrupt_mask = ~(0x01 << irq_num);
 		outb(MASTER_8259_DATA, (master_mask & interrupt_unmask));
 	}
 	else if(irq_num >= 8 && irq_num <= 15) {
-		interrupt_mask = ~(0x00000001 << (irq_num - 8));
+		interrupt_mask = ~(0x01 << (irq_num - 8));
 		outb(SLAVE_8259_DATA, (slave_mask & interrupt_unmask));
 	}
 	return;
@@ -81,11 +81,11 @@ void enable_irq(uint32_t irq_num) {
 void disable_irq(uint32_t irq_num) {
 	uint8_t interrupt_mask;
 	if(irq_num >= 0 && irq_num <= 7) {
-		interrupt_mask = (0x00000001 << irq_num);
+		interrupt_mask = (0x01 << irq_num);
 		outb(MASTER_8259_DATA, (master_mask | interrupt_mask));
 	}
 	else if(irq_num >= 8 && irq_num <= 15) {
-		interrupt_mask = (0x00000001 << (irq_num - 8));
+		interrupt_mask = (0x01 << (irq_num - 8));
 		outb(SLAVE_8259_DATA, (slave_mask | interrupt_mask));
 	}
 	return;	
