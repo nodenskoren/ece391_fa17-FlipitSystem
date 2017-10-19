@@ -4,13 +4,13 @@
 
 #include "i8259.h"
 #include "lib.h"
-#include <linux/spinlock.h>
+//#include <linux/spinlock.h>
 
 /* Interrupt masks to determine which interrupts are enabled and disabled */
 /* Initialized so that all IRQs were initially masked */
 uint8_t master_mask = 0xFF; /* IRQs 0-7  */
 uint8_t slave_mask = 0xFF;  /* IRQs 8-15 */
-spinlock_t irq_lock;
+//spinlock_t irq_lock;
 
 
 /* Initialize the 8259 PIC */
@@ -29,8 +29,8 @@ spinlock_t irq_lock;
 void i8259_init(void) {
 	
 	/* masking interrupts on the processor and acquiring a lock */
-	unsigned long flags;
-	spin_lock_irqsave(irq_lock, flags);
+	//unsigned long flags;
+	//spin_lock_irqsave(irq_lock, flags);
 	
 	/* masks all interrupts (on both PICs) */
 	/* active low */
@@ -54,7 +54,7 @@ void i8259_init(void) {
 	outb(SLAVE_8259_DATA, slave_mask);
 	
 	/* releases the lock, and restores the IF flag */
-	spin_unlock_irqrestore(irq_lock, flags);
+	//spin_unlock_irqrestore(irq_lock, flags);
 	return;
 }
 
@@ -63,12 +63,12 @@ void i8259_init(void) {
 void enable_irq(uint32_t irq_num) {
 	uint8_t interrupt_unmask;
 	if(irq_num >= 0 && irq_num <= 7) {
-		interrupt_mask = ~(0x01 << irq_num);
+		interrupt_unmask = ~(0x01 << irq_num);
 		master_mask = master_mask & interrupt_unmask;
 		outb(MASTER_8259_DATA, master_mask);
 	}
 	else if(irq_num >= 8 && irq_num <= 15) {
-		interrupt_mask = ~(0x01 << (irq_num - 8));
+		interrupt_unmask = ~(0x01 << (irq_num - 8));
 		slave_mask = slave_mask & interrupt_unmask;
 		outb(SLAVE_8259_DATA, slave_mask);
 	}
@@ -100,7 +100,7 @@ void send_eoi(uint32_t irq_num) {
 	}
 	else if(irq_num >= 8 && irq_num <= 15) {
 		outb(MASTER_8259_PORT, (EOI | 2));
-		outb(SLAVE_8259_PORT, (EOI | (irq_num - 8));
+		outb(SLAVE_8259_PORT, (EOI | (irq_num - 8)));
 	}
 	return;
 }
