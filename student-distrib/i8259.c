@@ -7,8 +7,9 @@
 #include <linux/spinlock.h>
 
 /* Interrupt masks to determine which interrupts are enabled and disabled */
-uint8_t master_mask; /* IRQs 0-7  */
-uint8_t slave_mask;  /* IRQs 8-15 */
+/* Initialized so that all IRQs were initially masked */
+uint8_t master_mask = 0xFF; /* IRQs 0-7  */
+uint8_t slave_mask = 0xFF;  /* IRQs 8-15 */
 spinlock_t irq_lock;
 
 
@@ -33,10 +34,8 @@ void i8259_init(void) {
 	
 	/* masks all interrupts (on both PICs) */
 	/* active low */
-	master_mask = 0xFF;
-	slave_mask = 0xFF;
-	outb(MASTER_8259_DATA, master_mask);
-	outb(SLAVE_8259_DATA, slave_mask);
+	outb(MASTER_8259_DATA, 0xFF);
+	outb(SLAVE_8259_DATA, 0xFF);
 	
 	/* executes the initialization sequence */
 	/* for master PIC */
@@ -51,8 +50,6 @@ void i8259_init(void) {
 	outb(SLAVE_8259_DATA, ICW4);
 	
 	/* restores the mask settings */
-	master_mask = 0x00;
-	slave_mask = 0x00;
 	outb(MASTER_8259_DATA, master_mask);
 	outb(SLAVE_8259_DATA, slave_mask);
 	
@@ -67,11 +64,13 @@ void enable_irq(uint32_t irq_num) {
 	uint8_t interrupt_unmask;
 	if(irq_num >= 0 && irq_num <= 7) {
 		interrupt_mask = ~(0x01 << irq_num);
-		outb(MASTER_8259_DATA, (master_mask & interrupt_unmask));
+		master_mask = master_mask & interrupt_unmask;
+		outb(MASTER_8259_DATA, master_mask);
 	}
 	else if(irq_num >= 8 && irq_num <= 15) {
 		interrupt_mask = ~(0x01 << (irq_num - 8));
-		outb(SLAVE_8259_DATA, (slave_mask & interrupt_unmask));
+		slave_mask = slave_mask & interrupt_unmask;
+		outb(SLAVE_8259_DATA, slave_mask);
 	}
 	return;
 }
@@ -82,11 +81,13 @@ void disable_irq(uint32_t irq_num) {
 	uint8_t interrupt_mask;
 	if(irq_num >= 0 && irq_num <= 7) {
 		interrupt_mask = (0x01 << irq_num);
-		outb(MASTER_8259_DATA, (master_mask | interrupt_mask));
+		master_mask = master_mask | interrupt_mask;
+		outb(MASTER_8259_DATA, master_mask);
 	}
 	else if(irq_num >= 8 && irq_num <= 15) {
 		interrupt_mask = (0x01 << (irq_num - 8));
-		outb(SLAVE_8259_DATA, (slave_mask | interrupt_mask));
+		slave_mask = slave_mask | interrupt_mask;
+		outb(SLAVE_8259_DATA, slave_mask);
 	}
 	return;	
 }
