@@ -8,6 +8,7 @@
 #include "i8259.h"
 #include "debug.h"
 #include "tests.h"
+#include "initialize_idt.h"
 
 #define RUN_TESTS
 
@@ -95,6 +96,15 @@ void entry(unsigned long magic, unsigned long addr) {
                     (unsigned)mmap->length_low);
     }
 
+	/* Construct an IDT */
+    {
+		initialize_idt();
+
+
+    } 
+	
+	
+	
     /* Construct an LDT entry in the GDT */
     {
         seg_desc_t the_ldt_desc;

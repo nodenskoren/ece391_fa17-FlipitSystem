@@ -25,11 +25,7 @@ _start:
 
 continue:
     # Load the GDT
-<<<<<<< HEAD
     lgdt    gdt_desc
-=======
-    lgdt    gdt_desc      #load gdt to gdt descriptor 
->>>>>>> 4dfc3fab19eb8ea10cb41ac98bd52705288d2fa2
 
     # Load CS with the new descriptor value
     ljmp    $KERNEL_CS, $keep_going
