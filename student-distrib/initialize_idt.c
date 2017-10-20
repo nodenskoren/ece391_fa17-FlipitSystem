@@ -21,7 +21,7 @@ void initialize_idt(){
         the_idt_desc.reserved1   = 0x1;
         the_idt_desc.size        = 0x1;  /* 32 bit */
         the_idt_desc.reserved0   = 0x0;
-        the_idt_desc.dpl         = 0x3;  /* kernel priviledged mode */
+        the_idt_desc.dpl         = 0x0;  /* kernel priviledged mode */
         the_idt_desc.present     = 0x1;
 
         /* Fills in the idt entry for first 19 exceptions reserved by Intel. */
