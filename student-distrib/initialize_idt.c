@@ -52,8 +52,8 @@ void initialize_idt(){
         SET_IDT_ENTRY(the_idt_desc, &exception_16);
         SET_IDT_ENTRY(the_idt_desc, &exception_17);
         SET_IDT_ENTRY(the_idt_desc, &exception_18);
-        SET_IDT_ENTRY(the_idt_desc, &exception_19);
-        SET_IDT_ENTRY(the_idt_desc, &keyboard_interrupt_handler);
+        //SET_IDT_ENTRY(the_idt_desc, &exception_19);
+        //SET_IDT_ENTRY(the_idt_desc, &keyboard_interrupt_handler);
 
         
 
