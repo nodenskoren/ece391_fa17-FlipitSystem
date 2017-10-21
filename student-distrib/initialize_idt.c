@@ -47,24 +47,24 @@ void initialize_idt(){
 			idt[RTC_ENTRY].dpl         = 0x0;       /* kernel priviledged mode */
 			idt[RTC_ENTRY].present     = 0x1;
 
-        SET_IDT_ENTRY(idt[0], &exception_1);
-        SET_IDT_ENTRY(idt[1], &exception_2);
-        SET_IDT_ENTRY(idt[2], &exception_3);
-        SET_IDT_ENTRY(idt[3], &exception_4);
-        SET_IDT_ENTRY(idt[4], &exception_5);
-        SET_IDT_ENTRY(idt[5], &exception_6);
-        SET_IDT_ENTRY(idt[6], &exception_7);
-        SET_IDT_ENTRY(idt[7], &exception_8);
-        SET_IDT_ENTRY(idt[8], &exception_9);
-        SET_IDT_ENTRY(idt[9], &exception_10);
-        SET_IDT_ENTRY(idt[10], &exception_11);
-        SET_IDT_ENTRY(idt[11], &exception_12);
-        SET_IDT_ENTRY(idt[12], &exception_13);
-        SET_IDT_ENTRY(idt[13], &exception_14);
-        SET_IDT_ENTRY(idt[14], &exception_15);
-        SET_IDT_ENTRY(idt[15], &exception_16);
-        SET_IDT_ENTRY(idt[16], &exception_17);
-        SET_IDT_ENTRY(idt[17], &exception_18);
+        SET_IDT_ENTRY(idt[0], &exception_0);
+        SET_IDT_ENTRY(idt[1], &exception_1);
+        SET_IDT_ENTRY(idt[2], &exception_2);
+        SET_IDT_ENTRY(idt[3], &exception_3);
+        SET_IDT_ENTRY(idt[4], &exception_4);
+        SET_IDT_ENTRY(idt[5], &exception_5);
+        SET_IDT_ENTRY(idt[6], &exception_6);
+        SET_IDT_ENTRY(idt[7], &exception_7);
+        SET_IDT_ENTRY(idt[8], &exception_8);
+        SET_IDT_ENTRY(idt[9], &exception_9);
+        SET_IDT_ENTRY(idt[10], &exception_10);
+        SET_IDT_ENTRY(idt[11], &exception_11);
+        SET_IDT_ENTRY(idt[12], &exception_12);
+        SET_IDT_ENTRY(idt[13], &exception_13);
+        SET_IDT_ENTRY(idt[14], &exception_14);
+        SET_IDT_ENTRY(idt[15], &exception_15);
+        SET_IDT_ENTRY(idt[16], &exception_16);
+        SET_IDT_ENTRY(idt[17], &exception_17);
         SET_IDT_ENTRY(idt[18], &exception_18);		
 		
 		lidt(idt_desc_ptr);
