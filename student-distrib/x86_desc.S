@@ -88,6 +88,11 @@ ldt_desc_ptr:
 gdt_bottom:
 
     .align 16
+	.word 0   #padding
+	
+gdt_desc:
+    .word gdt_bottom - gdt - 1
+    .long gdt
 
 ldt:
     .rept 4
@@ -101,9 +106,6 @@ idt_desc_ptr:
     .word idt_bottom - idt - 1
     .long idt
 
-gdt_desc:
-    .word gdt_bottom - gdt - 1
-    .long gdt
 
     .align  16
 idt:
