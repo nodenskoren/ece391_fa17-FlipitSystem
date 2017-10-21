@@ -13,54 +13,63 @@
 void initialize_idt(){
 
         int i;
-        idt_desc_t the_idt_desc;
-        the_idt_desc.seg_selector = KERNEL_CS;
-        the_idt_desc.reserved4   = 0x0; 
-        the_idt_desc.reserved3   = 0x0;  /* referenced from x86 ISA Manual */
-        the_idt_desc.reserved2   = 0x1;
-        the_idt_desc.reserved1   = 0x1;
-        the_idt_desc.size        = 0x1;  /* 32 bit */
-        the_idt_desc.reserved0   = 0x0;
-        the_idt_desc.dpl         = 0x0;  /* kernel priviledged mode */
-        the_idt_desc.present     = 0x1;
-
         /* Fills in the idt entry for first 19 exceptions reserved by Intel. */
-        idt_desc_t* test = (idt_desc_t*) idt;
+		for(i = 0; i < 19; i++){
+			idt[i].seg_selector = KERNEL_CS;
+			idt[i].reserved4   = 0x0; 
+			idt[i].reserved3   = 0x0;  /* referenced from x86 ISA Manual */
+			idt[i].reserved2   = 0x1;
+			idt[i].reserved1   = 0x1;
+			idt[i].size        = 0x1;  /* 32 bit */
+			idt[i].reserved0   = 0x0;
+			idt[i].dpl         = 0x0;  /* kernel priviledged mode */
+			idt[i].present     = 0x1;
+			
+		}	
+        //idt_desc_t* test = (idt_desc_t*) idt;
+			idt[KEYBOARD_ENTRY].seg_selector = KERNEL_CS;
+			idt[KEYBOARD_ENTRY].reserved4   = 0x0; 
+			idt[KEYBOARD_ENTRY].reserved3   = 0x0;  /* referenced from x86 ISA Manual */
+			idt[KEYBOARD_ENTRY].reserved2   = 0x1;
+			idt[KEYBOARD_ENTRY].reserved1   = 0x1;
+			idt[KEYBOARD_ENTRY].size        = 0x1;  /* 32 bit */
+			idt[KEYBOARD_ENTRY].reserved0   = 0x0;
+			idt[KEYBOARD_ENTRY].dpl         = 0x0;  /* kernel priviledged mode */
+			idt[KEYBOARD_ENTRY].present     = 0x1;
+			
+			idt[RTC_ENTRY].seg_selector = KERNEL_CS;
+			idt[RTC_ENTRY].reserved4   = 0x0; 
+			idt[RTC_ENTRY].reserved3   = 0x0;       /* referenced from x86 ISA Manual */
+			idt[RTC_ENTRY].reserved2   = 0x1;
+			idt[RTC_ENTRY].reserved1   = 0x1;
+			idt[RTC_ENTRY].size        = 0x1;       /* 32 bit */
+			idt[RTC_ENTRY].reserved0   = 0x0;
+			idt[RTC_ENTRY].dpl         = 0x0;       /* kernel priviledged mode */
+			idt[RTC_ENTRY].present     = 0x1;
 
-        for(i = 0; i < 19; i++){
-                test[i] = the_idt_desc;
-        }
-
-        test[KEYBOARD_ENTRY] = the_idt_desc;
-        test[RTC_ENTRY]      = the_idt_desc;
-
-        SET_IDT_ENTRY(the_idt_desc, &exception_1);
-        SET_IDT_ENTRY(the_idt_desc, &exception_2);
-        SET_IDT_ENTRY(the_idt_desc, &exception_3);
-        SET_IDT_ENTRY(the_idt_desc, &exception_4);
-        SET_IDT_ENTRY(the_idt_desc, &exception_5);
-        SET_IDT_ENTRY(the_idt_desc, &exception_6);
-        SET_IDT_ENTRY(the_idt_desc, &exception_7);
-        SET_IDT_ENTRY(the_idt_desc, &exception_8);
-        SET_IDT_ENTRY(the_idt_desc, &exception_9);
-        SET_IDT_ENTRY(the_idt_desc, &exception_10);
-        SET_IDT_ENTRY(the_idt_desc, &exception_11);
-        SET_IDT_ENTRY(the_idt_desc, &exception_12);
-        SET_IDT_ENTRY(the_idt_desc, &exception_13);
-        SET_IDT_ENTRY(the_idt_desc, &exception_14);
-        SET_IDT_ENTRY(the_idt_desc, &exception_15);
-        SET_IDT_ENTRY(the_idt_desc, &exception_16);
-        SET_IDT_ENTRY(the_idt_desc, &exception_17);
-        SET_IDT_ENTRY(the_idt_desc, &exception_18);
+        SET_IDT_ENTRY(idt[0], &exception_1);
+        SET_IDT_ENTRY(idt[1], &exception_2);
+        SET_IDT_ENTRY(idt[2], &exception_3);
+        SET_IDT_ENTRY(idt[3], &exception_4);
+        SET_IDT_ENTRY(idt[4], &exception_5);
+        SET_IDT_ENTRY(idt[5], &exception_6);
+        SET_IDT_ENTRY(idt[6], &exception_7);
+        SET_IDT_ENTRY(idt[7], &exception_8);
+        SET_IDT_ENTRY(idt[8], &exception_9);
+        SET_IDT_ENTRY(idt[9], &exception_10);
+        SET_IDT_ENTRY(idt[10], &exception_11);
+        SET_IDT_ENTRY(idt[11], &exception_12);
+        SET_IDT_ENTRY(idt[12], &exception_13);
+        SET_IDT_ENTRY(idt[13], &exception_14);
+        SET_IDT_ENTRY(idt[14], &exception_15);
+        SET_IDT_ENTRY(idt[15], &exception_16);
+        SET_IDT_ENTRY(idt[16], &exception_17);
+        SET_IDT_ENTRY(idt[17], &exception_18);
+        SET_IDT_ENTRY(idt[18], &exception_18);		
+		
+		lidt(idt_desc_ptr);
         //SET_IDT_ENTRY(the_idt_desc, &exception_19);
         //SET_IDT_ENTRY(the_idt_desc, &keyboard_interrupt_handler);
-
-        
-
-
-
-
-
 
 }
 
