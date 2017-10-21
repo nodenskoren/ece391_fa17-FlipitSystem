@@ -100,7 +100,6 @@ void entry(unsigned long magic, unsigned long addr) {
     {
 		initialize_idt();
 
-
     } 
 	
 	

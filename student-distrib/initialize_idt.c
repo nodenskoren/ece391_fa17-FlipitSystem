@@ -26,26 +26,6 @@ void initialize_idt(){
 			idt[i].present     = 0x1;
 			
 		}	
-        //idt_desc_t* test = (idt_desc_t*) idt;
-			idt[KEYBOARD_ENTRY].seg_selector = KERNEL_CS;
-			idt[KEYBOARD_ENTRY].reserved4   = 0x0; 
-			idt[KEYBOARD_ENTRY].reserved3   = 0x0;  /* referenced from x86 ISA Manual */
-			idt[KEYBOARD_ENTRY].reserved2   = 0x1;
-			idt[KEYBOARD_ENTRY].reserved1   = 0x1;
-			idt[KEYBOARD_ENTRY].size        = 0x1;  /* 32 bit */
-			idt[KEYBOARD_ENTRY].reserved0   = 0x0;
-			idt[KEYBOARD_ENTRY].dpl         = 0x0;  /* kernel priviledged mode */
-			idt[KEYBOARD_ENTRY].present     = 0x1;
-			
-			idt[RTC_ENTRY].seg_selector = KERNEL_CS;
-			idt[RTC_ENTRY].reserved4   = 0x0; 
-			idt[RTC_ENTRY].reserved3   = 0x0;       /* referenced from x86 ISA Manual */
-			idt[RTC_ENTRY].reserved2   = 0x1;
-			idt[RTC_ENTRY].reserved1   = 0x1;
-			idt[RTC_ENTRY].size        = 0x1;       /* 32 bit */
-			idt[RTC_ENTRY].reserved0   = 0x0;
-			idt[RTC_ENTRY].dpl         = 0x0;       /* kernel priviledged mode */
-			idt[RTC_ENTRY].present     = 0x1;
 
         SET_IDT_ENTRY(idt[0], &exception_0);
         SET_IDT_ENTRY(idt[1], &exception_1);
@@ -68,8 +48,7 @@ void initialize_idt(){
         SET_IDT_ENTRY(idt[18], &exception_18);		
 		
 		lidt(idt_desc_ptr);
-        //SET_IDT_ENTRY(the_idt_desc, &exception_19);
-        //SET_IDT_ENTRY(the_idt_desc, &keyboard_interrupt_handler);
+
 
 }
 
