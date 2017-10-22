@@ -8,7 +8,7 @@
 /* Interrupt masks to determine which interrupts are enabled and disabled */
 uint8_t master_mask; /* IRQs 0-7  */
 uint8_t slave_mask;  /* IRQs 8-15 */
-uint32_t flags;
+unsigned long flags;
 
 /* Initialize the 8259 PIC */
 void i8259_init(void) {
@@ -40,38 +40,38 @@ void i8259_init(void) {
 /* Enable (unmask) the specified IRQ */
 void enable_irq(uint32_t irq_num) {
 	
-	//cli_and_save(flags); 
+	cli_and_save(flags); 
 	uint8_t interrupt_unmask;
 	if(irq_num >= 0 && irq_num <= 7) {
 		interrupt_unmask = ~(0x01 << irq_num);
-		master_mask = master_mask & interrupt_unmask;
+		master_mask = inb(MASTER_8259_DATA) & interrupt_unmask;
 		outb(master_mask, MASTER_8259_DATA);
 	}
 	else if(irq_num >= 8 && irq_num <= 15) {
 		interrupt_unmask = ~(0x01 << (irq_num - 8));
-		slave_mask = slave_mask & interrupt_unmask;
+		slave_mask = inb(SLAVE_8259_DATA) & interrupt_unmask;
 		outb(slave_mask, SLAVE_8259_DATA);
 	}
-	//restore_flags(flags);
+	restore_flags(flags);
 	
 }
 
 /* Disable (mask) the specified IRQ */
 void disable_irq(uint32_t irq_num) {
 	
-	//cli_and_save(flags); 
+	cli_and_save(flags); 
 	uint8_t interrupt_mask;
 	if(irq_num >= 0 && irq_num <= 7) {
 		interrupt_mask = (0x01 << irq_num);
-		master_mask = master_mask | interrupt_mask;
+		master_mask = inb(MASTER_8259_DATA) | interrupt_mask;
 		outb(master_mask, MASTER_8259_DATA);
 	}
 	else if(irq_num >= 8 && irq_num <= 15) {
 		interrupt_mask = (0x01 << (irq_num - 8));
-		slave_mask = slave_mask | interrupt_mask;
+		slave_mask = inb(SLAVE_8259_DATA) | interrupt_mask;
 		outb(slave_mask, SLAVE_8259_DATA);
 	}
-	//restore_flags(flags);
+	restore_flags(flags);
 	
 }
 
