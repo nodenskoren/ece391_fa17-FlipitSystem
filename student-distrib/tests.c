@@ -45,6 +45,23 @@ int idt_test(){
 	return result;
 }
 
+
+int paging_test(){
+
+	
+	/*int result = PASS;
+	int *a = 0x000B8;
+	int b = *(a);
+	printf("paging result= %d\n", b);
+	
+	*/
+	
+	int *c = (int*) 0x400000;
+	*c = 3;
+	printf("paging result= %d\n", *c);
+	
+	return 0;
+}
 // add more tests here
 
 /* Checkpoint 2 tests */
@@ -56,5 +73,8 @@ int idt_test(){
 /* Test suite entry point */
 void launch_tests(){
 	TEST_OUTPUT("idt_test", idt_test());
+	printf("hello world");
 	// launch your tests here
+	int x = paging_test();
+	
 }

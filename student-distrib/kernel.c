@@ -9,7 +9,7 @@
 #include "debug.h"
 #include "tests.h"
 #include "initialize_idt.h"
-
+#include "paging.h"
 #define RUN_TESTS
 
 /* Macros. */
@@ -150,14 +150,15 @@ void entry(unsigned long magic, unsigned long addr) {
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
-
+	
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
     /*printf("Enabling Interrupts\n");
     sti();*/
-
+	//paging_init();
+		
 #ifdef RUN_TESTS
     /* Run tests */
     launch_tests();
