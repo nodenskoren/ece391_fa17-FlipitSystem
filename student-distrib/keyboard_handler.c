@@ -16,6 +16,13 @@
 #define  LOWER_CASE           0
 #define  UPPER_CASE           1
 
+#define BEGINNING_OF_RELEASE 0x81
+#define END_OF_RELEASE 0xD8
+#define BEGINNING_OF_PRINTABLE 0x01
+#define END_OF_PRINTABLE 0x39
+#define DELETE 0x0E
+#define KEYBOARD_PORT 0x60
+
 
 //uint8_t keyboard_mapping[2][57];  /*  Keyboard array that converts the scancode to ascii value */
 int caps_lock_flag = 0;
@@ -29,12 +36,12 @@ void keyboard_interrupt_handler(){
 unsigned long flags;
 //cli_and_save(flags);
 cli();
-    unsigned int c = inb(0x60);
+    unsigned int c = inb(KEYBOARD_PORT);
 	
 sti();
         
 cli_and_save(flags);
-        if(c==0x0E){
+        if(c==DELETE){
            /*catches backspace does nothing*/
 	}
 
@@ -78,11 +85,11 @@ cli_and_save(flags);
 	else if( c == LEFT_SHIFT_RELEASED)
 		left_shift_flag = 0;
 
-        else if(c>= 0x81 && c<=0xD8){
+        else if(c>= BEGINNING_OF_RELEASE && c<=END_OF_RELEASE){
             /*key release trigger do nothing*/
 	}
 
-	else if(c>=0x01 && c <=0x39){
+	else if(c>=BEGINNING_OF_PRINTABLE && c <=END_OF_PRINTABLE){
             /*printable character pressed---check case status and print*/
 		if(caps_lock_counter | right_shift_flag | left_shift_flag)
 		    printf("%c", keyboard_mapping_capital[c]);
@@ -130,7 +137,7 @@ void keyboard_initialization(){
 
 
 
-unsigned char keyboard_mapping_lowercase[60] = {
+unsigned char keyboard_mapping_lowercase[MAPPING_SIZE] = {
         0x00,0x1B,0x31,0x32,0x33,0x34,0x35,0x36,0x37,0x38,0x39,0x30,0x2D,
 	0x3D,0x08,0x09,0x71,0x77,0x65,0x72,0x74,0x79,0x75,0x69,0x6F,0x70,
 	0x5B,0x5D,0x13,0x00,0x61,0x73,0x64,0x66,0x67,0x68,0x6A,0x6B,0x6C,
@@ -141,7 +148,7 @@ unsigned char keyboard_mapping_lowercase[60] = {
 
 };
 
-unsigned char keyboard_mapping_capital[60] = {
+unsigned char keyboard_mapping_capital[MAPPING_SIZE] = {
         0x00,0x1B,0x21,0x40,0x23,0x24,0x25,0x5E,0x26,0x2A,0x28,0x29,0x5F,
 	0x2B,0x08,0x09,0x51,0x57,0x45,0x52,0x54,0x59,0x55,0x49,0x4F,0x50,
 	0x7B,0x7D,0x13,0x00,0x41,0x53,0x44,0x46,0x47,0x48,0x4A,0x4B,0x4C,

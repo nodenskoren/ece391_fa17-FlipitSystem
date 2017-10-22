@@ -12,10 +12,12 @@
 #include "initialize_idt.h"
 */
 
+
+#define MAPPING_SIZE 60
 extern void keyboard_interrupt_handler();
 extern void keyboard_initialization();
 
-extern unsigned char keyboard_mapping_lowercase[60];
-extern unsigned char keyboard_mapping_capital[60];
+extern unsigned char keyboard_mapping_lowercase[MAPPING_SIZE];
+extern unsigned char keyboard_mapping_capital[MAPPING_SIZE];
 
 #endif
