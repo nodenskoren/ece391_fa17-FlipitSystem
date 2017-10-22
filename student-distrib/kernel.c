@@ -10,6 +10,7 @@
 #include "tests.h"
 #include "initialize_idt.h"
 #include "keyboard_handler.h"
+#include "RTC_driver.h"
 
 #define RUN_TESTS
 
@@ -149,6 +150,7 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Init the PIC */
     i8259_init();
     keyboard_initialization();
+	initialize_RTC_driver();
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */

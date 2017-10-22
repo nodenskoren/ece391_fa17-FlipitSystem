@@ -64,7 +64,7 @@ void initialize_RTC_driver(){
 
 void RTC_interrupt_handler(){
 	
-	//test_interrupts(); //test cases for RTC interrupt
+//	test_interrupts(); //test cases for RTC interrupt
 	
 	/* Enable another RTC interrupt */
 	outb(REG_C, REG_NUM_PORT);            // select register C
