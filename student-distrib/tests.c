@@ -19,7 +19,6 @@ static inline void assertion_failure(){
 
 
 /* Checkpoint 1 tests */
-
 /* IDT Test - Example
  * 
  * Asserts that first 10 IDT entries are not NULL
@@ -46,6 +45,8 @@ int idt_test(){
 }
 
 
+// add more tests here
+
 int paging_test(){
 
 	
@@ -56,14 +57,12 @@ int paging_test(){
 	
 	*/
 	
-	int *c = (int*) 0x400000;
+	int *c = (int*) 0;
 	*c = 3;
 	printf("paging result= %d\n", *c);
 	
 	return 0;
 }
-// add more tests here
-
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
