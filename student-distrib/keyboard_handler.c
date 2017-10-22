@@ -35,55 +35,70 @@ sti();
         
 cli_and_save(flags);
         if(c==0x0E){
-           printf("\r");
+           /*catches backspace does nothing*/
 	}
-	else if( c == CAPS_LOCK_PRESSED) {
 
-		if( caps_lock_flag == 1)/* caps lock still pressing, do nothing */
-		{
-		}
+	else if( c == CAPS_LOCK_PRESSED){
+	  if( caps_lock_flag == 1)
+	  {
+             /* caps lock still pressing, do nothing */
+	  
+	  }
 			
-
-		else if(caps_lock_counter == 0) /* first time pressing caps_lock */
-		{
-			caps_lock_flag = 1;
-			caps_lock_counter = 1;
-		}       
-		else{                           /* second time pressing caps lock */
-			caps_lock_counter = 0;
-			caps_lock_flag = 1;
-		}
-	}	
-
-	else if( c == CAPS_LOCK_RELEASED) 
-	{
-		caps_lock_flag = 0;
+       	  else if(caps_lock_counter == 0){
+            /* first time pressing caps_lock */
+	    caps_lock_flag = 1;
+            caps_lock_counter = 1;
+	  }       
+	  else{
+            /* second time pressing caps lock */
+	    caps_lock_counter = 0;
+	    caps_lock_flag = 1;
+          }
 	}
 
+	else if( c == CAPS_LOCK_RELEASED){
+	    /*caps lock released reset flag*/
+	    caps_lock_flag = 0;
+	}
+
+        /*right shift pressed change flag*/
 	else if( c == RIGHT_SHIFT_PRESSED)
 		right_shift_flag = 1;
+
+        /*when released reset flag to 0*/
 	else if( c == RIGHT_SHIFT_RELEASED)
 		right_shift_flag = 0;
+
+        /*left shift pressed change flag*/
 	else if( c == LEFT_SHIFT_PRESSED)
 		left_shift_flag = 1;
+
+        /*when released reset flag to 0*/
 	else if( c == LEFT_SHIFT_RELEASED)
 		left_shift_flag = 0;
+
         else if(c>= 0x81 && c<=0xD8){
-
+            /*key release trigger do nothing*/
 	}
-	else if(c>=0x01 && c <=0x39){
 
+	else if(c>=0x01 && c <=0x39){
+            /*printable character pressed---check case status and print*/
 		if(caps_lock_counter | right_shift_flag | left_shift_flag)
-			printf("%c", keyboard_mapping_capital[c]);
+		    printf("%c", keyboard_mapping_capital[c]);
+
 		else
-			printf("%c", keyboard_mapping_lowercase[c]);
+		    printf("%c", keyboard_mapping_lowercase[c]);
 
 	}
 	else{
+	/*character not recognized do nothing*/
 	}
+
+
     send_eoi(1);  //ends interrupt on IRQ1 for keyboard
 
-restore_flags(flags);
+restore_flags(flags);  //end of interrupt end of critical section
 }
 
 
@@ -105,7 +120,6 @@ void keyboard_initialization(){
 	idt[KEYBOARD_ENTRY].dpl         = 0x0;  /* kernel priviledged mode */
 	idt[KEYBOARD_ENTRY].present     = 0x1;
         SET_IDT_ENTRY(idt[KEYBOARD_ENTRY], &keyboard_interrupt_handler);
-        lidt(idt_desc_ptr);
         enable_irq(1); // enables keyboard interrupt on IRQ
         
 
