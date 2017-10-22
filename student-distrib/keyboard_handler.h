@@ -15,6 +15,7 @@
 extern void keyboard_interrupt_handler();
 extern void keyboard_initialization();
 
-//extern unit_8 keyboard_mapping[2][57]; 
+extern unsigned char keyboard_mapping_lowercase[60];
+extern unsigned char keyboard_mapping_capital[60];
 
 #endif

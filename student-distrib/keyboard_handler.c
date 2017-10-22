@@ -17,7 +17,7 @@
 #define  UPPER_CASE           1
 
 
-uint8_t keyboard_mapping[2][57];  /*  Keyboard array that converts the scancode to ascii value */
+//uint8_t keyboard_mapping[2][57];  /*  Keyboard array that converts the scancode to ascii value */
 int caps_lock_flag = 0;
 int caps_lock_counter = 0;
 int right_shift_flag = 0;
@@ -34,8 +34,10 @@ cli();
 sti();
         
 cli_and_save(flags);
-        
-	if( c == CAPS_LOCK_PRESSED) {
+        if(c==0x0E){
+           printf("\r");
+	}
+	else if( c == CAPS_LOCK_PRESSED) {
 
 		if( caps_lock_flag == 1)/* caps lock still pressing, do nothing */
 		{
@@ -72,9 +74,9 @@ cli_and_save(flags);
 	else if(c>=0x01 && c <=0x39){
 
 		if(caps_lock_counter | right_shift_flag | left_shift_flag)
-			printf("%c", keyboard_mapping[UPPER_CASE][c-1]);
+			printf("%c", keyboard_mapping_capital[c]);
 		else
-			printf("%c", keyboard_mapping[LOWER_CASE][c-1]);
+			printf("%c", keyboard_mapping_lowercase[c]);
 
 	}
 	else{
@@ -104,138 +106,36 @@ void keyboard_initialization(){
 	idt[KEYBOARD_ENTRY].present     = 0x1;
         SET_IDT_ENTRY(idt[KEYBOARD_ENTRY], &keyboard_interrupt_handler);
         lidt(idt_desc_ptr);
-
-	keyboard_mapping[LOWER_CASE][0] = 0x1B; /* Escape pressed */
-	keyboard_mapping[LOWER_CASE][1] = 0x31; /* 1 pressed */
-	keyboard_mapping[LOWER_CASE][2] = 0x32; /* 2 pressed */
-	keyboard_mapping[LOWER_CASE][3] = 0x33; /* 3 pressed */
-	keyboard_mapping[LOWER_CASE][4] = 0x34; /* 4 pressed */
-	keyboard_mapping[LOWER_CASE][5] = 0x35; /* 5pressed */
-	keyboard_mapping[LOWER_CASE][6] = 0x36; /* 6 pressed */
-	keyboard_mapping[LOWER_CASE][7] = 0x37; /* 7 pressed */
-	keyboard_mapping[LOWER_CASE][8] = 0x38; /* 8 pressed */
-	keyboard_mapping[LOWER_CASE][9] = 0x39;  /* 9 pressed */
-	keyboard_mapping[LOWER_CASE][10] = 0x30; /* 0 pressed */
-	keyboard_mapping[LOWER_CASE][11] = 0x2D; /* - pressed */
-	keyboard_mapping[LOWER_CASE][12] = 0x3D; /* = pressed */
-	//keyboard_mapping[13] =       /* backspace pressed */
-	//keyboard_mapping[14] =       /* tab pressed */
-	keyboard_mapping[LOWER_CASE][15] = 0x71; /* q pressed */
-	keyboard_mapping[LOWER_CASE][16] = 0x77; /* w pressed */
-	keyboard_mapping[LOWER_CASE][17] = 0x65; /* e pressed */
-	keyboard_mapping[LOWER_CASE][18] = 0x72; /* r ressed */
-	keyboard_mapping[LOWER_CASE][19] = 0x74; /* t pressed */
-	keyboard_mapping[LOWER_CASE][20] = 0x79; /* y pressed */
-	keyboard_mapping[LOWER_CASE][21] = 0x75; /* u pressed */
-	keyboard_mapping[LOWER_CASE][22] = 0x69; /* i pressed */
-	keyboard_mapping[LOWER_CASE][23] = 0x6F; /* o pressed */
-	keyboard_mapping[LOWER_CASE][24] = 0x70; /* p pressed */
-	keyboard_mapping[LOWER_CASE][25] = 0x5B; /* [ pressed */
-	keyboard_mapping[LOWER_CASE][26] = 0x5D; /* ] pressed */
-	//keyboard_mapping[27] =       /* Enter pressed */
-	//keyboard_mapping[28] =       /* left control pressed */
-	keyboard_mapping[LOWER_CASE][29] = 0x61; /* a pressed */
-	keyboard_mapping[LOWER_CASE][30] = 0x73;  /* s pressed */
-	keyboard_mapping[LOWER_CASE][31] = 0x64;  /* d pressed */
-	keyboard_mapping[LOWER_CASE][32] = 0x66;  /* f pressed */
-	keyboard_mapping[LOWER_CASE][33] = 0x67;  /* g pressed */
-	keyboard_mapping[LOWER_CASE][34] = 0x68;  /* h pressed */
-	keyboard_mapping[LOWER_CASE][35] = 0x6A;  /* j pressed */
-	keyboard_mapping[LOWER_CASE][36] = 0x6B;  /* k pressed */
-	keyboard_mapping[LOWER_CASE][37] = 0x6C;  /* l pressed */
-	keyboard_mapping[LOWER_CASE][38] = 0x3B;  /* ; pressed */
-	keyboard_mapping[LOWER_CASE][39] = 0x27;  /* ' pressed */
-	keyboard_mapping[LOWER_CASE][40] = 0x60;  /*  pressed */
-	//keyboard_mapping[41] =        /* left shift pressed */
-	keyboard_mapping[LOWER_CASE][42] = 0x5C;  /* \ pressed */
-	keyboard_mapping[LOWER_CASE][43] = 0x7A;  /* z pressed */
-	keyboard_mapping[LOWER_CASE][44] = 0x78;  /* x pressed */
-	keyboard_mapping[LOWER_CASE][45] = 0x63;  /* c pressed */
-	keyboard_mapping[LOWER_CASE][46] = 0x76;  /* v pressed */
-	keyboard_mapping[LOWER_CASE][47] = 0x62;  /* b pressed */
-	keyboard_mapping[LOWER_CASE][48] = 0x6E;  /* n pressed */
-	keyboard_mapping[LOWER_CASE][49] = 0x6D;  /* m pressed */
-	keyboard_mapping[LOWER_CASE][50] = 0x2C;  /* , pressed */
-	keyboard_mapping[LOWER_CASE][51] = 0x2E;  /* .pressed */
-	keyboard_mapping[LOWER_CASE][52] = 0x2F;  /* / pressed */
-	//keyboard_mapping[53] =        /* right shift pressed */
-	keyboard_mapping[LOWER_CASE][54] = 0x2A;  /* * pressed */
-	//keyboard_mapping[55] =        /* left alt pressed */
-	keyboard_mapping[LOWER_CASE][56] = 0x20;  /* space alt pressed */
-	//keyboard_mapping[57] =        /* Caps Lock pressed */
-	//keyboard_mapping[58] =        /* F1 pressed */
-
-	keyboard_mapping[UPPER_CASE][0] = 0x1B; /* Escape pressed */
-	keyboard_mapping[UPPER_CASE][1] = 0x21; /* ! pressed */
-	keyboard_mapping[UPPER_CASE][2] = 0x40; /* @ pressed */
-	keyboard_mapping[UPPER_CASE][3] = 0x23; /* # pressed */
-	keyboard_mapping[UPPER_CASE][4] = 0x24; /* $ pressed */
-	keyboard_mapping[UPPER_CASE][5] = 0x25; /* % pressed */
-	keyboard_mapping[UPPER_CASE][6] = 0x5E; /* ^ pressed */
-	keyboard_mapping[UPPER_CASE][7] = 0x26; /* & pressed */
-	keyboard_mapping[UPPER_CASE][8] = 0x2A; /* * pressed */
-	keyboard_mapping[UPPER_CASE][9] = 0x28;  /* ( pressed */
-	keyboard_mapping[UPPER_CASE][10] = 0x29; /* ) pressed */
-	keyboard_mapping[UPPER_CASE][11] = 0x5F; /* _ pressed */
-	keyboard_mapping[UPPER_CASE][12] = 0x2B; /* + pressed */
-	//keyboard_mapping[13] =       /* backspace pressed */
-	//keyboard_mapping[14] =       /* tab pressed */
-	keyboard_mapping[UPPER_CASE][15] = 0x51; /* Q pressed */
-	keyboard_mapping[UPPER_CASE][16] = 0x57; /* W pressed */
-	keyboard_mapping[UPPER_CASE][17] = 0x45; /* E pressed */
-	keyboard_mapping[UPPER_CASE][18] = 0x52; /* R ressed */
-	keyboard_mapping[UPPER_CASE][19] = 0x54; /* T pressed */
-	keyboard_mapping[UPPER_CASE][20] = 0x59; /* Y pressed */
-	keyboard_mapping[UPPER_CASE][21] = 0x55; /* U pressed */
-	keyboard_mapping[UPPER_CASE][22] = 0x49; /* I pressed */
-	keyboard_mapping[UPPER_CASE][23] = 0x4F; /* O pressed */
-	keyboard_mapping[UPPER_CASE][24] = 0x50; /* P pressed */
-	keyboard_mapping[UPPER_CASE][25] = 0x7B; /* { pressed */
-	keyboard_mapping[UPPER_CASE][26] = 0x7D; /* } pressed */
-	//keyboard_mapping[27] =       /* Enter pressed */
-	//keyboard_mapping[28] =       /* left control pressed */
-	keyboard_mapping[UPPER_CASE][29] = 0x41; /* A pressed */
-	keyboard_mapping[UPPER_CASE][30] = 0x53;  /* S pressed */
-	keyboard_mapping[UPPER_CASE][31] = 0x44;  /* D pressed */
-	keyboard_mapping[UPPER_CASE][32] = 0x46;  /* F pressed */
-	keyboard_mapping[UPPER_CASE][33] = 0x47;  /* G pressed */
-	keyboard_mapping[UPPER_CASE][34] = 0x48;  /* H pressed */
-	keyboard_mapping[UPPER_CASE][35] = 0x4A;  /* J pressed */
-	keyboard_mapping[UPPER_CASE][36] = 0x4B;  /* K pressed */
-	keyboard_mapping[UPPER_CASE][37] = 0x4C;  /* L pressed */
-	keyboard_mapping[UPPER_CASE][38] = 0x3A;  /* : pressed */
-	keyboard_mapping[UPPER_CASE][39] = 0x22;  /* " pressed */
-	keyboard_mapping[UPPER_CASE][40] = 0x60;  /*  pressed */
-	//keyboard_mapping[41] =        /* left shift pressed */
-	keyboard_mapping[UPPER_CASE][42] = 0x7C;  /* | pressed */
-	keyboard_mapping[UPPER_CASE][43] = 0x5A;  /* Z pressed */
-	keyboard_mapping[UPPER_CASE][44] = 0x58;  /* X pressed */
-	keyboard_mapping[UPPER_CASE][45] = 0x43;  /* C pressed */
-	keyboard_mapping[UPPER_CASE][46] = 0x56;  /* V pressed */
-	keyboard_mapping[UPPER_CASE][47] = 0x42;  /* B pressed */
-	keyboard_mapping[UPPER_CASE][48] = 0x4E;  /* N pressed */
-	keyboard_mapping[UPPER_CASE][49] = 0x4D;  /* M pressed */
-	keyboard_mapping[UPPER_CASE][50] = 0x3C;  /* < pressed */
-	keyboard_mapping[UPPER_CASE][51] = 0x3E;  /* >pressed */
-	keyboard_mapping[UPPER_CASE][52] = 0x3F;  /* ? pressed */
-	//keyboard_mapping[53] =        /* right shift pressed */
-	keyboard_mapping[UPPER_CASE][54] = 0x2A;  /* * pressed */
-	//keyboard_mapping[55] =        /* left alt pressed */
-	keyboard_mapping[UPPER_CASE][56] = 0x20;  /* space alt pressed */
-	//keyboard_mapping[57] =        /* Caps Lock pressed */
-	//keyboard_mapping[58] =        /* F1 pressed */
-
-
-        
-
-
-
-
         enable_irq(1); // enables keyboard interrupt on IRQ
         
 
 
 }
+
+
+
+
+
+unsigned char keyboard_mapping_lowercase[60] = {
+        0x00,0x1B,0x31,0x32,0x33,0x34,0x35,0x36,0x37,0x38,0x39,0x30,0x2D,
+	0x3D,0x08,0x09,0x71,0x77,0x65,0x72,0x74,0x79,0x75,0x69,0x6F,0x70,
+	0x5B,0x5D,0x13,0x00,0x61,0x73,0x64,0x66,0x67,0x68,0x6A,0x6B,0x6C,
+	0x3B,0x27,0x60,0x00,0x5C,0x7A,0x78,0x63,0x76,0x62,0x6E,0x6D,0x2C,
+	0x2E,0x2F,0x00,0x2A,0x00,0x20,
+
+
+
+};
+
+unsigned char keyboard_mapping_capital[60] = {
+        0x00,0x1B,0x21,0x40,0x23,0x24,0x25,0x5E,0x26,0x2A,0x28,0x29,0x5F,
+	0x2B,0x08,0x09,0x51,0x57,0x45,0x52,0x54,0x59,0x55,0x49,0x4F,0x50,
+	0x7B,0x7D,0x13,0x00,0x41,0x53,0x44,0x46,0x47,0x48,0x4A,0x4B,0x4C,
+	0x3A,0x22,0x60,0x00,0x7C,0x5A,0x58,0x43,0x56,0x42,0x4E,0x4D,0x3C,
+	0x3E,0x3F,0x00,0x2A,0x00,0x20,0x00
+
+};
+
 
 
 
