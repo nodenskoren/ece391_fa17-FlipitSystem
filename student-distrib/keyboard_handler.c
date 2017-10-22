@@ -34,10 +34,8 @@ cli();
 sti();
         
 cli_and_save(flags);
-        if((c >= 0x81) && (c <= 0xD8)){
-            
-	}
-	else if( c == CAPS_LOCK_PRESSED) {
+        
+	if( c == CAPS_LOCK_PRESSED) {
 
 		if( caps_lock_flag == 1)/* caps lock still pressing, do nothing */
 		{
@@ -68,6 +66,9 @@ cli_and_save(flags);
 		left_shift_flag = 1;
 	else if( c == LEFT_SHIFT_RELEASED)
 		left_shift_flag = 0;
+        else if(c>= 0x81 && c<=0xD8){
+
+	}
 	else if(c>=0x01 && c <=0x39){
 
 		if(caps_lock_counter | right_shift_flag | left_shift_flag)
@@ -78,14 +79,11 @@ cli_and_save(flags);
 	}
 	else{
 	}
-//	restore_flags(flags);
-//sti();
     send_eoi(1);  //ends interrupt on IRQ1 for keyboard
 
 restore_flags(flags);
 }
 
-//keyboard_mapping [] = 
 
 
 /*  Referenced from OSDev PS2 Keyboard Scan Code Set 1. More keys to be added in the future. 
@@ -226,9 +224,14 @@ void keyboard_initialization(){
 	keyboard_mapping[UPPER_CASE][56] = 0x20;  /* space alt pressed */
 	//keyboard_mapping[57] =        /* Caps Lock pressed */
 	//keyboard_mapping[58] =        /* F1 pressed */
-//        printf("just before irq enable\n");
-        enable_irq(1); // enables keyboard interrupt on IRQ1
-	printf("done keyboard initilizing");
+
+
+        
+
+
+
+
+        enable_irq(1); // enables keyboard interrupt on IRQ
         
 
 
