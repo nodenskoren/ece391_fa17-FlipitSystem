@@ -5,6 +5,8 @@
 #include "debug.h"
 #include "tests.h"    
 
+
+extern void initialize_idt();
 extern void exception_0 ();
 extern void exception_1 ();
 extern void exception_2 ();
