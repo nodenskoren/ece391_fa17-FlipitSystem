@@ -150,7 +150,9 @@ void entry(unsigned long magic, unsigned long addr) {
 
     /* Init the PIC */
     i8259_init();
+	/*Init the keyboard*/
     keyboard_initialization();
+	/*init the RTC_driver*/
 	initialize_RTC_driver();
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
@@ -163,6 +165,7 @@ void entry(unsigned long magic, unsigned long addr) {
     printf("Enabling Interrupts\n");
     sti();
 
+    /*init paging*/
     paging_init();
 
 #ifdef RUN_TESTS
