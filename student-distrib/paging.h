@@ -5,6 +5,7 @@
 #define KERNEL_ADDRESS 0x400000
 #define EMPTY_ENTRY 0x00000002
 
+// bit string structure for page discriptor entry
 typedef struct page_directory_entry {
 	struct {
 		uint32_t	present_flag : 1;
@@ -21,6 +22,7 @@ typedef struct page_directory_entry {
 	}__attribute__((packed));
 } page_directory_entry;
 
+// bit string structure for page table entry
 typedef struct page_table_entry {
 	struct {
 		uint32_t	present_flag : 1;
@@ -37,4 +39,7 @@ typedef struct page_table_entry {
 	}__attribute__((packed));
 } page_table_entry;
 
+/* initialize paging descriptors and tables and turn paging on
+	 this initialization maps page discriptor table[0] into video memory(4kb) and [1] to kernel memory (4mb)
+*/
 extern void paging_init();

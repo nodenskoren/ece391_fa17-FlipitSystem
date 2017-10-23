@@ -21,7 +21,7 @@ static inline void assertion_failure(){
 /* Checkpoint 1 tests */
 
 /* IDT Test - Example
- * 
+ *
  * Asserts that first 10 IDT entries are not NULL
  * Inputs: None
  * Outputs: PASS/FAIL
@@ -29,7 +29,7 @@ static inline void assertion_failure(){
  * Coverage: Load IDT, IDT definition
  * Files: x86_desc.h/S
  */
- 
+
 
 int idt_test(){
 	TEST_HEADER;
@@ -37,7 +37,7 @@ int idt_test(){
 	int i;
 	int result = PASS;
 	for (i = 0; i < 10; ++i){
-		if ((idt[i].offset_15_00 == NULL) && 
+		if ((idt[i].offset_15_00 == NULL) &&
 			(idt[i].offset_31_16 == NULL)){
 			assertion_failure();
 			result = FAIL;
@@ -47,18 +47,18 @@ int idt_test(){
 	return result;
 }
 
-
+// helper function for paging test
 void paging_test(){
 
 	// access kernel memory
 	int *c = (int*) 0x400000;
 	*c = 3;
 	printf("paging result= %d\n", *c);
-	
+	// access 0x0 
 	int *d = NULL;
 	printf("paging result= %d\n", *d);
-	
-	
+
+
 }
 
 
@@ -77,7 +77,6 @@ void launch_tests(){
 	printf("hello world");
 	// launch your tests here
 //	paging_test();
-	
-	
-}
 
+
+}
