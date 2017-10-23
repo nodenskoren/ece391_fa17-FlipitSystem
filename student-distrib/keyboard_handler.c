@@ -133,9 +133,10 @@ void keyboard_initialization(){
 
 }
 
+/*Referenced from OSDev PS2 Keyboard Scan Code Set 1. More keys to be added in the future.
+   Initializes the array that maps the scancode to ascii value */
 
-
-
+/*lowercase map of characters from press to ascii*/
 
 unsigned char keyboard_mapping_lowercase[MAPPING_SIZE] = {
         0x00,0x1B,0x31,0x32,0x33,0x34,0x35,0x36,0x37,0x38,0x39,0x30,0x2D,
@@ -147,6 +148,8 @@ unsigned char keyboard_mapping_lowercase[MAPPING_SIZE] = {
 
 
 };
+
+/*uppercase map of characters from press to ascii*/
 
 unsigned char keyboard_mapping_capital[MAPPING_SIZE] = {
         0x00,0x1B,0x21,0x40,0x23,0x24,0x25,0x5E,0x26,0x2A,0x28,0x29,0x5F,
