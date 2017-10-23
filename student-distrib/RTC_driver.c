@@ -10,6 +10,8 @@
 #define IRQ_RTC_NUM    8
 #define RATE           0x0F
 #define RTC_ENTRY      0x28
+#define BIT_6_MASK     0x40
+#define HIGH_BYTE_MASK 0xF0
 
 /* IMPORTANT NOTE: The following code is inspired by OSDev. The web is available at: http://wiki.osdev.org/RTC */
 
@@ -41,14 +43,14 @@ void initialize_RTC_driver(){
 	outb(REG_B, REG_NUM_PORT);		           // select register B, and disable NMI	
 	char prev = inb(IO_PORT);    	           // read the current value of register B
 	outb(REG_B, REG_NUM_PORT);		           // select register B, and disable NMI
-	outb(prev | 0x40, IO_PORT);     	       // write the previous value ORed with 0x40. This turns on bit 6 of register B
+	outb(prev | BIT_6_MASK, IO_PORT);     	       // write the previous value ORed with 0x40. This turns on bit 6 of register B
 	
 	
     /* Set frequency to 2Hz */
     outb(REG_A, REG_NUM_PORT);		           // set index to register A, disable NMI
     prev = inb(IO_PORT);              	       // get initial value of register A
     outb(REG_A, REG_NUM_PORT);		           // reset index to A
-    outb(((prev & 0xF0) | RATE) , IO_PORT);    // write rate 2Hz to regsiter A
+    outb(((prev & HIGH_BYTE_MASK) | RATE) , IO_PORT);    // write rate 2Hz to regsiter A
 	
 	enable_irq(IRQ_RTC_NUM);
 }
