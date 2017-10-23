@@ -7,66 +7,109 @@
 #include "paging.h"
 
 page_directory_entry page_directory[PAGE_DIRECTORY_SIZE] __attribute__((aligned(4096)));
-page_table_entry page_table[PAGE_TABLE_SIZE] __attribute__((aligned(4096)));
+page_table_entry video_page_table[PAGE_TABLE_SIZE] __attribute__((aligned(4096)));
 
-void page_directory_init() {
+
+/* helper function to initialize video page table to not present
+ * input -- none
+ * output -- none
+ */
+void video_table_init(){
+	int i;
+	// loop through the page table and set all the page entry to read write enabled
+	for (i = 0; i < PAGE_TABLE_SIZE; i++){
+		
+		video_page_table[i].present_flag = 0;
+		video_page_table[i].read_write_flag = 1;
+		video_page_table[i].user_supervisor_flag = 0;
+		video_page_table[i].pwt_flag = 0;
+		video_page_table[i].pcd_flag = 0;
+		video_page_table[i].accessed_flag = 0;
+		video_page_table[i].dirty_flag = 0;
+		video_page_table[i].page_size_flag = 0;
+		video_page_table[i].available_flag = 0;
+		video_page_table[i].global_page_flag = 0;
+		video_page_table[i].base_address = 0;
+		
+		//video_page_table[i] = EMPTY_ENTRY;
+	}
+}
+
+/* helper function to initialize video descriptor table to not present
+ * input -- none
+ * output -- none
+ */
+void video_desc_init(){
+	
 	page_directory[0].present_flag = 1;
-	page_directory[0].read_write_flag = 0;
 	page_directory[0].user_supervisor_flag = 1;
-	page_directory[0].pwt_flag = 0;
-	page_directory[0].pcd_flag = 1; /* not sure */
-	page_directory[0].accessed_flag = 0;
-	page_directory[0].reserved_flag = 0;
-	page_directory[0].page_size_flag = 0;
-	page_directory[0].global_page_flag = 0;
-	page_directory[0].available_flag = 0;
-	page_directory[0].base_address = ((uint32_t)page_table >> 12);
+	page_directory[0].base_address = ((uint32_t)video_page_table >> 12);
+	
+	//page_directory[0] = (((uint32_t)video_page_table >> 12) | 0x07);	
+}
+
+/* helper function to initialize kernel descriptor table to not present
+ * input -- none
+ * output -- none
+ */
+void kernel_desc_init(){
 	
 	page_directory[1].present_flag = 1;
-	page_directory[1].read_write_flag = 1;
-	page_directory[1].user_supervisor_flag = 0;
-	page_directory[1].pwt_flag = 0;
-	page_directory[1].pcd_flag = 1; /* not sure */
-	page_directory[1].accessed_flag = 0;
-	page_directory[1].reserved_flag = 0;
-	page_directory[1].page_size_flag = 0;
-	page_directory[1].global_page_flag = 0;
-	page_directory[1].available_flag = 0;
-	page_directory[1].base_address = 1;	/* not sure */
+	page_directory[1].page_size_flag = 1;
+	// we only care about the first 20 bits of the memory
+	page_directory[1].base_address = (KERNEL_ADDRESS >> 12);
 	
-	for(int index = 2; index < PAGE_DIRECTORY_SIZE; index++) {
-		page_directory[index].present_flag = 1;
-		page_directory[index].read_write_flag = 1;
-		page_directory[index].user_supervisor_flag = 1;
-		page_directory[index].pwt_flag = 0;
-		page_directory[index].pcd_flag = 1; /* not sure */
-		page_directory[index].accessed_flag = 0;
-		page_directory[index].reserved_flag = 0;
-		page_directory[index].page_size_flag = 0;
-		page_directory[index].global_page_flag = 0;
-		page_directory[index].available_flag = 0;
-		page_directory[index].base_address = 0;		
-	}
+	//page_directory[1] = ((KERNEL_ADDRESS >> 12) | 0x83);	
 }
 
-void page_table_init() {
-	for(int index = 0; index < PAGE_TABLE_SIZE; index++) {
-		page_table[index].present_flag = 0;
-		page_table[index].read_write_flag = 0;
-		page_table[index].user_supervisor_flag = 0;
-		page_table[index].pwt_flag = 0; 
-		page_table[index].pcd_flag = 1; /* not sure */
-		page_table[index].accessed_flag = 0;
-		page_table[index].dirty_flag = 0;
-		page_table[index].page_size_flag = 0;
-		page_table[index].global_page_flag = 0;
-		page_table[index].available_flag = 0;
-		page_table[index].base_address = index;		
-	}
-}
 
+/* initialize paging descriptors and tables and turn paging on
+ * input -- none
+ * output -- none
+ */
 void paging_init() {
-	page_table_init();	
-	page_directory_init();
-	/* need linkage */
+	int i;
+	for(i = 0; i < PAGE_DIRECTORY_SIZE; i++){
+		
+		page_directory[i].present_flag = 0;
+		page_directory[i].read_write_flag = 1;
+		page_directory[i].user_supervisor_flag = 0;
+		page_directory[i].pwt_flag = 0;
+		page_directory[i].pcd_flag = 0;
+		page_directory[i].accessed_flag = 0;
+		page_directory[i].reserved_flag = 0;
+		page_directory[i].page_size_flag = 0;
+		page_directory[i].global_page_flag = 0;
+		page_directory[i].available_flag = 0;		
+		page_directory[i].base_address = 0;
+		
+		//page_directory[i] = EMPTY_ENTRY;		
+	}
+	video_table_init();
+	video_desc_init();
+	kernel_desc_init();
+	
+	//we only care about the first 20 bits of the address
+	video_page_table[VIDEO_MEMORY].base_address = (VIDEO_MEMORY_ADDRESS >> 12);
+	video_page_table[VIDEO_MEMORY].present_flag = 1;
+	video_page_table[VIDEO_MEMORY].user_supervisor_flag = 1;
+
+	//video_page_table[VIDEO_MEMORY] = ((VIDEO_MEMORY_ADDRESS >> 12) | 0x07);	
+
+	// using asm to push the values into correct registers
+	asm volatile(
+		"movl $page_directory, %%eax		\n	\
+		movl %%eax, %%cr3			\n				\
+		movl %%cr4, %%eax			\n				\
+		orl  $0x00000010, %%eax	\n	\
+		movl %%eax, %%cr4		\n \
+		movl %%cr0, %%eax	\n 	\
+		orl  $0x80000001, %%eax	\n	\
+		movl %%eax, %%cr0"	\ 	
+
+
+		: \
+		: "g"(page_directory) \
+		: "eax", "cc", "memory"); \
 }
+
