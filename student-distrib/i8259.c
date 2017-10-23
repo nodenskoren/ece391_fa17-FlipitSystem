@@ -56,8 +56,8 @@ void i8259_init(void) {
 	outb(SLAVE_8259_DATA, slave_mask); */
 	
 	/* restores the mask settings */
-	outb(0xFF, MASTER_8259_DATA);
-	outb(0xFF, SLAVE_8259_DATA);
+	outb(DISABLE_ALL_INTERRUPTS, MASTER_8259_DATA);
+	outb(DISABLE_ALL_INTERRUPTS, SLAVE_8259_DATA);
 	restore_flags(flags);
 	
 	enable_irq(2); // irq 2 is slave pic
@@ -84,7 +84,7 @@ void enable_irq(uint32_t irq_num) {
 	cli_and_save(flags); 
 	uint8_t interrupt_unmask;
 	/* If the IRQ line we wish to enable is from the master PIC */
-	if(irq_num >= 0 && irq_num <= 7) {
+	if(irq_num >= MASTER_IRQ_0 && irq_num <= MASTER_IRQ_7) {
 		/* Only the enabling bit would be 0 */
 		interrupt_unmask = ~(0x01 << irq_num);
 		/* Write back the enabled bit string */
@@ -92,9 +92,9 @@ void enable_irq(uint32_t irq_num) {
 		outb(master_mask, MASTER_8259_DATA);
 	}
 	/* If the IRQ line we wish to enable is from the slave PIC */	
-	else if(irq_num >= 8 && irq_num <= 15) {
+	else if(irq_num >= SLAVE_IRQ_0 && irq_num <= SLAVE_IRQ_7) {
 		/* Only the enabling bit would be 0, but irq_num should be referenced using slave PIC instead of master PIC */
-		interrupt_unmask = ~(0x01 << (irq_num - 8));
+		interrupt_unmask = ~(0x01 << (irq_num - SLAVE_IRQ_LOCAL_NUMBER));
 		/* Write back the enabled bit string */
 		slave_mask = inb(SLAVE_8259_DATA) & interrupt_unmask;
 		outb(slave_mask, SLAVE_8259_DATA);
@@ -124,7 +124,7 @@ void disable_irq(uint32_t irq_num) {
 	cli_and_save(flags); 
 	uint8_t interrupt_mask;
 	/* If the IRQ line we wish to disable is from the master PIC */	
-	if(irq_num >= 0 && irq_num <= 7) {
+	if(irq_num >= MASTER_IRQ_0 && irq_num <= MASTER_IRQ_7) {
 		/* Only the disabling bit would be 1 */		
 		interrupt_mask = (0x01 << irq_num);
 		/* Write back the disabled bit string */		
@@ -132,9 +132,9 @@ void disable_irq(uint32_t irq_num) {
 		outb(master_mask, MASTER_8259_DATA);
 	}
 	/* If the IRQ line we wish to disable is from the slave PIC */		
-	else if(irq_num >= 8 && irq_num <= 15) {
+	else if(irq_num >= SLAVE_IRQ_0 && irq_num <= SLAVE_IRQ_7) {
 		/* Only the disabling bit would be 1, but irq_num should be referenced using slave PIC instead of master PIC */		
-		interrupt_mask = (0x01 << (irq_num - 8));
+		interrupt_mask = (0x01 << (irq_num - SLAVE_IRQ_LOCAL_NUMBER));
 		/* Write back the disabled bit string */
 		slave_mask = inb(SLAVE_8259_DATA) | interrupt_mask;
 		outb(slave_mask, SLAVE_8259_DATA);
@@ -157,7 +157,7 @@ void send_eoi(uint32_t irq_num) {
 	 *		only need to write to the master port.
 	 *
 	 */
-	if(irq_num >= 0 && irq_num <= 7) {
+	if(irq_num >= MASTER_IRQ_0 && irq_num <= MASTER_IRQ_7) {
 		outb((EOI | irq_num), MASTER_8259_PORT);
 	}
 	/* 
@@ -166,11 +166,11 @@ void send_eoi(uint32_t irq_num) {
 	 *		signals are propageted from/to the master PIC.
 	 *
 	 */	
-	else if(irq_num >= 8 && irq_num <= 15) {
+	else if(irq_num >= SLAVE_IRQ_0 && irq_num <= SLAVE_IRQ_7) {
 		/* Slave PIC is always connected to IRQ2 in our scenario */
-		outb((EOI | 2), MASTER_8259_PORT);
+		outb((EOI | MASTER_IRQ_2), MASTER_8259_PORT);
 		/* irq_num should be referenced using slave PIC instead of master PIC */
-		outb((EOI | (irq_num - 8)), SLAVE_8259_PORT);
+		outb((EOI | (irq_num - SLAVE_IRQ_LOCAL_NUMBER)), SLAVE_8259_PORT);
 	}
 }
 

@@ -29,6 +29,15 @@
  * to declare the interrupt finished */
 #define EOI                 0x60
 
+/* Definitions on magic numbers */
+#define MASTER_IRQ_0               0
+#define MASTER_IRQ_2               2
+#define MASTER_IRQ_7               7
+#define SLAVE_IRQ_0                8
+#define SLAVE_IRQ_7                15
+#define DISABLE_ALL_INTERRUPTS     0xFF
+#define SLAVE_IRQ_LOCAL_NUMBER     8
+
 /* Externally-visible functions */
 
 /* Initialize both PICs */
