@@ -76,7 +76,7 @@ void launch_tests(){
 	TEST_OUTPUT("idt_test", idt_test());
 	printf("hello world");
 	// launch your tests here
-	paging_test();
+//	paging_test();
 	
 	
 }
