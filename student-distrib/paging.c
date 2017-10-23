@@ -98,14 +98,14 @@ void paging_init() {
 
 	// using asm to push the values into correct registers
 	asm volatile(
-		"movl $page_directory, %%eax		\n	\
-		movl %%eax, %%cr3			\n				\
-		movl %%cr4, %%eax			\n				\
-		orl  $0x00000010, %%eax	\n	\
-		movl %%eax, %%cr4		\n \
-		movl %%cr0, %%eax	\n 	\
-		orl  $0x80000001, %%eax	\n	\
-		movl %%eax, %%cr0"	\ 	
+		"movl $page_directory, %%eax		\n\
+		movl %%eax, %%cr3			\n\
+		movl %%cr4, %%eax			\n\
+		orl  $0x00000010, %%eax	\n\
+		movl %%eax, %%cr4		\n\
+		movl %%cr0, %%eax	\n\
+		orl  $0x80000001, %%eax	\n\
+		movl %%eax, %%cr0" 	
 
 
 		: \

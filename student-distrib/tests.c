@@ -29,6 +29,8 @@ static inline void assertion_failure(){
  * Coverage: Load IDT, IDT definition
  * Files: x86_desc.h/S
  */
+ 
+
 int idt_test(){
 	TEST_HEADER;
 
@@ -45,6 +47,21 @@ int idt_test(){
 	return result;
 }
 
+
+void paging_test(){
+
+	// access kernel memory
+	int *c = (int*) 0x400000;
+	*c = 3;
+	printf("paging result= %d\n", *c);
+	
+	int *d = NULL;
+	printf("paging result= %d\n", *d);
+	
+	
+}
+
+
 // add more tests here
 
 /* Checkpoint 2 tests */
@@ -54,7 +71,13 @@ int idt_test(){
 
 
 /* Test suite entry point */
+/* Test suite entry point */
 void launch_tests(){
 	TEST_OUTPUT("idt_test", idt_test());
+	printf("hello world");
 	// launch your tests here
+	paging_test();
+	
+	
 }
+
