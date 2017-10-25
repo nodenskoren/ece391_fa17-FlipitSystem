@@ -13,8 +13,12 @@
 #define  RIGHT_SHIFT_RELEASED 0xB6
 #define  LEFT_SHIFT_PRESSED   0x2A
 #define  LEFT_SHIFT_RELEASED  0xAA
+#define  CTRL_PRESSED         0x1D
+#define CTRL_RELEASED         0x9D
+
 #define  LOWER_CASE           0
 #define  UPPER_CASE           1
+
 
 #define BEGINNING_OF_RELEASE 0x81
 #define END_OF_RELEASE 0xD8
@@ -29,6 +33,7 @@ int caps_lock_flag = 0;
 int caps_lock_counter = 0;
 int right_shift_flag = 0;
 int left_shift_flag = 0;
+int control_flag = 0;
 
 /* This function should be called when the key is pressed and keyboard interrupt is sent to PIC. 
    Prints out the character from port 0x60 */
@@ -85,11 +90,18 @@ cli_and_save(flags);
 	else if( c == LEFT_SHIFT_RELEASED)
 		left_shift_flag = 0;
 
-        else if(c>= BEGINNING_OF_RELEASE && c<=END_OF_RELEASE){
+        
+	else if(c==CTRL_PRESSED){
+              control_flag = 1;
+	}
+	else if(c==CTRL_RELEASED){
+              control_flag = 0;
+	}
+else if(c>= BEGINNING_OF_RELEASE && c<=END_OF_RELEASE){
             /*key release trigger do nothing*/
 	}
 
-	else if(c>=BEGINNING_OF_PRINTABLE && c <=END_OF_PRINTABLE){
+	else if(c>=BEGINNING_OF_PRINTABLE && c <=END_OF_PRINTABLE && control_flag!=1){
             /*printable character pressed---check case status and print*/
 		if(caps_lock_counter | right_shift_flag | left_shift_flag)
 		    printf("%c", keyboard_mapping_capital[c]);
@@ -97,6 +109,11 @@ cli_and_save(flags);
 		else
 		    printf("%c", keyboard_mapping_lowercase[c]);
 
+	}
+	else if(c == 0x26 && control_flag==1){
+              clear();
+	      //screen_x = 0;
+	      //screen_y = 0;
 	}
 	else{
 	/*character not recognized do nothing*/
@@ -128,6 +145,7 @@ void keyboard_initialization(){
 	idt[KEYBOARD_ENTRY].present     = 0x1;
         SET_IDT_ENTRY(idt[KEYBOARD_ENTRY], &keyboard_interrupt_handler);
         enable_irq(1); // enables keyboard interrupt on IRQ
+	
         
 
 
