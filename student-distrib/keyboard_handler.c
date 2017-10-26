@@ -34,11 +34,20 @@ int caps_lock_counter = 0;
 int right_shift_flag = 0;
 int left_shift_flag = 0;
 int control_flag = 0;
+/*buffer of text input*/
+char buf[128];
+/*current position in buffer*/
+int buf_position = 0;
 
 /* This function should be called when the key is pressed and keyboard interrupt is sent to PIC. 
    Prints out the character from port 0x60 */
 void keyboard_interrupt_handler(){
 unsigned long flags;
+
+
+/*used to check if input opcode is letter or number*/
+int is_letter(unsigned int c);
+
 //cli_and_save(flags);
 cli();
     unsigned int c = inb(KEYBOARD_PORT);
@@ -48,6 +57,14 @@ sti();
 cli_and_save(flags);
         if(c==DELETE){
            /*catches backspace does nothing*/
+	   if(buf_position==0){
+             /*do nothing no character to delete*/
+	   }
+	   else{
+	     buf_position--;
+	     buf[buf_position]=NULL;
+             
+	   }
 	}
 
 	else if( c == CAPS_LOCK_PRESSED){
@@ -97,29 +114,71 @@ cli_and_save(flags);
 	else if(c==CTRL_RELEASED){
               control_flag = 0;
 	}
-else if(c>= BEGINNING_OF_RELEASE && c<=END_OF_RELEASE){
+        else if(c>= BEGINNING_OF_RELEASE && c<=END_OF_RELEASE){
             /*key release trigger do nothing*/
 	}
 
 	else if(c>=BEGINNING_OF_PRINTABLE && c <=END_OF_PRINTABLE && control_flag!=1){
             /*printable character pressed---check case status and print*/
-		if(caps_lock_counter | right_shift_flag | left_shift_flag)
-		    printf("%c", keyboard_mapping_capital[c]);
+	    if(buf_position==127){
+              //do nothing because buffer is full
 
-		else
-		    printf("%c", keyboard_mapping_lowercase[c]);
+	    }
+	    else if(!caps_lock_counter){
+		if(right_shift_flag | left_shift_flag){
+		    //printf("%c", keyboard_mapping_capital[c]);
+		    buf[buf_position] = keyboard_mapping_capital[c];
+		    buf_position++;
+		}
+
+		else{
+		    //printf("%c", keyboard_mapping_lowercase[c]);
+                    buf[buf_position] = keyboard_mapping_lowercase[c];
+		    buf_position++;
+		    }
+            }
+	    else{
+                 if(!is_letter(c)){
+                    if(right_shift_flag | left_shift_flag){
+		      //printf("%c", keyboard_mapping_capital[c]);
+		      buf[buf_position] = keyboard_mapping_capital[c];
+		      buf_position++;
+		    }
+		   
+		    else{
+		      //printf("%c",keyboard_mapping_lowercase[c]);
+		      buf[buf_position] = keyboard_mapping_lowercase[c];
+		      buf_position++;
+		   }
+		  }    
+                 else if(right_shift_flag | left_shift_flag){
+                    //printf("%c", keyboard_mapping_lowercase[c]);
+		    buf[buf_position] = keyboard_mapping_lowercase[c];
+		    buf_position++;
+	         }
+		 
+		 else{
+		    //printf("%c", keyboard_mapping_capital[c]);
+                    buf[buf_position] = keyboard_mapping_capital[c];
+		    buf_position++;
+		 }
+
+
+	    }
 
 	}
 	else if(c == 0x26 && control_flag==1){
               clear();
-	      //screen_x = 0;
-	      //screen_y = 0;
 	}
 	else{
 	/*character not recognized do nothing*/
 	}
+    clear();
 
+   // for(i = 0; i<=buf_position;i++){
+       printf("%s",buf);
 
+    //}
     send_eoi(1);  //ends interrupt on IRQ1 for keyboard
 
 restore_flags(flags);  //end of interrupt end of critical section
@@ -151,10 +210,30 @@ void keyboard_initialization(){
 
 }
 
+
+/*is_letter
+ *DESCRIPTION: takes in letter tells if letter character is pressed
+ *or number
+ *INPUT: c---opcode from keyboard
+ *OUTPUT: 0 if symbol other then letter is input
+ *        1 if symbol is a letter
+ *SIDEFFECTS: NONE
+ */
+int is_letter(unsigned int c){
+    if(c>=0x01 && c<=0x0D) return 0;
+    if(c==0x1A || 0x1B) return 0;
+    if(c>=0x27&& c<=0x2B)return 0;
+    if(c>=0x33 && c<=0x35)return 0;
+
+    return 1;
+
+};
+
 /*Referenced from OSDev PS2 Keyboard Scan Code Set 1. More keys to be added in the future.
    Initializes the array that maps the scancode to ascii value */
 
 /*lowercase map of characters from press to ascii*/
+
 
 unsigned char keyboard_mapping_lowercase[MAPPING_SIZE] = {
         0x00,0x1B,0x31,0x32,0x33,0x34,0x35,0x36,0x37,0x38,0x39,0x30,0x2D,
@@ -173,7 +252,7 @@ unsigned char keyboard_mapping_capital[MAPPING_SIZE] = {
         0x00,0x1B,0x21,0x40,0x23,0x24,0x25,0x5E,0x26,0x2A,0x28,0x29,0x5F,
 	0x2B,0x08,0x09,0x51,0x57,0x45,0x52,0x54,0x59,0x55,0x49,0x4F,0x50,
 	0x7B,0x7D,0x13,0x00,0x41,0x53,0x44,0x46,0x47,0x48,0x4A,0x4B,0x4C,
-	0x3A,0x22,0x60,0x00,0x7C,0x5A,0x58,0x43,0x56,0x42,0x4E,0x4D,0x3C,
+	0x3A,0x22,0x7E,0x00,0x7C,0x5A,0x58,0x43,0x56,0x42,0x4E,0x4D,0x3C,
 	0x3E,0x3F,0x00,0x2A,0x00,0x20,0x00
 
 };
