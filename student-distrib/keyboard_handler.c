@@ -86,7 +86,7 @@ cli_and_save(flags);
           }
 	}
 
-	else if( c == CAPS_LOCK_RELEASED){
+	else if(c == CAPS_LOCK_RELEASED){
 	    /*caps lock released reset flag*/
 	    caps_lock_flag = 0;
 	}
@@ -124,7 +124,8 @@ cli_and_save(flags);
               //do nothing because buffer is full
 
 	    }
-	    else if(!caps_lock_counter){
+	    //printf("caps_lock_counter: %d");
+	    else if(caps_lock_counter==0){
 		if(right_shift_flag | left_shift_flag){
 		    //printf("%c", keyboard_mapping_capital[c]);
 		    buf[buf_position] = keyboard_mapping_capital[c];
@@ -138,7 +139,7 @@ cli_and_save(flags);
 		    }
             }
 	    else{
-                 if(!is_letter(c)){
+                 if(!(is_letter(c))){
                     if(right_shift_flag | left_shift_flag){
 		      //printf("%c", keyboard_mapping_capital[c]);
 		      buf[buf_position] = keyboard_mapping_capital[c];
@@ -151,16 +152,19 @@ cli_and_save(flags);
 		      buf_position++;
 		   }
 		  }    
-                 else if(right_shift_flag | left_shift_flag){
-                    //printf("%c", keyboard_mapping_lowercase[c]);
-		    buf[buf_position] = keyboard_mapping_lowercase[c];
-		    buf_position++;
-	         }
+                 else{
+		     if(right_shift_flag | left_shift_flag){
+                        //printf("%c", keyboard_mapping_lowercase[c]);
+		        buf[buf_position] = keyboard_mapping_lowercase[c];
+		        buf_position++;
+	             }
+
 		 
-		 else{
-		    //printf("%c", keyboard_mapping_capital[c]);
-                    buf[buf_position] = keyboard_mapping_capital[c];
-		    buf_position++;
+		     else{
+		        //printf("%c", keyboard_mapping_capital[c]);
+                        buf[buf_position] = keyboard_mapping_capital[c];
+		        buf_position++;
+		     }
 		 }
 
 
@@ -168,6 +172,10 @@ cli_and_save(flags);
 
 	}
 	else if(c == 0x26 && control_flag==1){
+	      int i;
+	      for(i=0;i<buf_position;i++)
+	          buf[i] = NULL;
+	      buf_position = 0;
               clear();
 	}
 	else{
@@ -220,11 +228,12 @@ void keyboard_initialization(){
  *SIDEFFECTS: NONE
  */
 int is_letter(unsigned int c){
+    //printf("Character: %c",c);
     if(c>=0x01 && c<=0x0D) return 0;
-    if(c==0x1A || 0x1B) return 0;
+    if(c==0x1A || c==0x1B) return 0;
     if(c>=0x27&& c<=0x2B)return 0;
     if(c>=0x33 && c<=0x35)return 0;
-
+    //printf("MADE IT HERE!!!!!!!!!!!");
     return 1;
 
 };
