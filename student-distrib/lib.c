@@ -12,7 +12,7 @@ static int screen_x;
 static int screen_y;
 
 static int previous_buf_length=0;
-static int buf_print_y;
+
 
 static char* video_mem = (char *)VIDEO;
 
@@ -52,9 +52,16 @@ void clear(void) {
  *       the "#" modifier to alter output. */
 
 void print_keyboard_buffer(char *buf,int buf_position){
-       
+        
 	   
 	   int i;
+
+       if(previous_buf_length==80 && buf_position < 80){
+         //screen_y--; 
+
+	   }
+
+
 	   screen_x -=previous_buf_length;
 	   for(i=0;i<previous_buf_length;i++){
 	       
@@ -207,9 +214,13 @@ int32_t puts(int8_t* s) {
  *  Function: Output a character to the console */
 void putc(uint8_t c) {
     if(c == '\n' || c == '\r') {
+	  
         screen_y++;
         screen_x = 0;
 		previous_buf_length = 0;
+		if(screen_y==NUM_ROWS)
+		   scroll_the_page();
+		   
 
     } else {
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
@@ -220,11 +231,8 @@ void putc(uint8_t c) {
            screen_y++;
 		   screen_x=0;
 		}
-        //screen_x %= NUM_COLS;
-	   
-//        screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
-
-		
+	if(screen_y == NUM_ROWS)
+	   scroll_the_page();
 		
     }
 }
@@ -295,6 +303,26 @@ uint32_t strlen(const int8_t* s) {
     while (s[len] != '\0')
         len++;
     return len;
+}
+
+void scroll_the_page(){
+     int x;
+	 int y;
+	 for(y = 0; y<NUM_ROWS-1; y++){
+       for(x = 0;x<NUM_COLS;x++){
+         *(uint8_t *)(video_mem + ((NUM_COLS * y + x)<<1)) = 
+	       *(uint8_t *)(video_mem + ((NUM_COLS * (y+1) + x)<<1));
+
+		 *(uint8_t *)(video_mem+((NUM_COLS * y +x)<<1)+1) = ATTRIB;
+       }
+	 }
+
+	 for(x = 0; x<NUM_COLS;x++){
+        *(uint8_t *)(video_mem+((NUM_COLS * (NUM_ROWS-1) + x)<<1)) = ' ';
+		*(uint8_t *)(video_mem+((NUM_COLS * (NUM_ROWS-1) + x)<<1)+1) = ATTRIB;
+
+	 }
+	 screen_y--;
 }
 
 /* void* memset(void* s, int32_t c, uint32_t n);
