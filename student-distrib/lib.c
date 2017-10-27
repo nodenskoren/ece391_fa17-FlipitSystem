@@ -55,14 +55,18 @@ void print_keyboard_buffer(char *buf,int buf_position){
         
 	   
 	   int i;
-
+/*
        if(previous_buf_length==80 && buf_position < 80){
          //screen_y--; 
 
 	   }
-
-
+*/
+      
 	   screen_x -=previous_buf_length;
+	   if(screen_x < 0){
+         screen_y--;
+		 screen_x+=NUM_COLS;
+	   }
 	   for(i=0;i<previous_buf_length;i++){
 	       
            printf(" ");
@@ -213,6 +217,7 @@ int32_t puts(int8_t* s) {
  * Return Value: void
  *  Function: Output a character to the console */
 void putc(uint8_t c) {
+
     if(c == '\n' || c == '\r') {
 	  
         screen_y++;
@@ -223,17 +228,26 @@ void putc(uint8_t c) {
 		   
 
     } else {
+
+	    if(screen_x==80){
+          screen_y++;
+		  screen_x = 0;
+		  if(screen_y==NUM_ROWS)
+		    scroll_the_page();
+		}
+		
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
         screen_x++;
 		/*increments y and sets x to zero for new line*/
+		/*
 	if(screen_x==80){
            screen_y++;
 		   screen_x=0;
 		}
 	if(screen_y == NUM_ROWS)
 	   scroll_the_page();
-		
+		*/
     }
 }
 
