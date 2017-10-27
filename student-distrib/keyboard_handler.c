@@ -15,6 +15,8 @@
 #define  LEFT_SHIFT_RELEASED  0xAA
 #define  CTRL_PRESSED         0x1D
 #define CTRL_RELEASED         0x9D
+#define ENTER_PRESSED         0x1C
+#define CARRIAGE_RETURN       0x0A
 
 #define  LOWER_CASE           0
 #define  UPPER_CASE           1
@@ -65,6 +67,18 @@ cli_and_save(flags);
 	     buf[buf_position]=NULL;
              
 	   }
+	}
+
+	else if(c==ENTER_PRESSED){
+	     buf[buf_position] = CARRIAGE_RETURN;
+	     buf_position++;
+	     print_keyboard_buffer(buf,buf_position); 
+             int i;
+	     for(i=0;i<buf_position;i++)
+                buf[i] = NULL;
+	     buf_position=0;
+	     
+	     
 	}
 
 	else if( c == CAPS_LOCK_PRESSED){
@@ -181,12 +195,12 @@ cli_and_save(flags);
 	else{
 	/*character not recognized do nothing*/
 	}
-    clear();
+    //clear();
+if(c!=ENTER_PRESSED)
+   print_keyboard_buffer(buf,buf_position);
+      // printf("%s",buf);
 
-   // for(i = 0; i<=buf_position;i++){
-       printf("%s",buf);
-
-    //}
+    
     send_eoi(1);  //ends interrupt on IRQ1 for keyboard
 
 restore_flags(flags);  //end of interrupt end of critical section

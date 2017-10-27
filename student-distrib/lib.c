@@ -10,6 +10,10 @@
 
 static int screen_x;
 static int screen_y;
+
+static int previous_buf_length=0;
+static int buf_print_y;
+
 static char* video_mem = (char *)VIDEO;
 
 /* void clear(void);
@@ -24,6 +28,9 @@ void clear(void) {
     }
 	screen_x = 0;
 	screen_y = 0;
+	previous_buf_length = 0;
+	
+	
 }
 
 /* Standard printf().
@@ -43,6 +50,35 @@ void clear(void) {
  *       the beginning), but I think it's more flexible this way.
  *       Also note: %x is the only conversion specifier that can use
  *       the "#" modifier to alter output. */
+
+void print_keyboard_buffer(char *buf,int buf_position){
+       
+	   
+	   int i;
+	   screen_x -=previous_buf_length;
+	   for(i=0;i<previous_buf_length;i++){
+	       
+           printf(" ");
+		     
+		   }
+       screen_x -=previous_buf_length;
+        for(i=0; i<buf_position;i++){
+		   
+           printf("%c",buf[i]);
+		   
+		   
+		}
+		if(buf[i-1]!='\n')
+		  previous_buf_length = buf_position;
+
+	   //screen_x = screen_x-(screen_x%NUM_COLS);
+	   
+	   //screen_x = temp;
+	   //return printf("%s",buf);
+
+}
+
+
 int32_t printf(int8_t *format, ...) {
 
     /* Pointer to the format string */
@@ -173,16 +209,23 @@ void putc(uint8_t c) {
     if(c == '\n' || c == '\r') {
         screen_y++;
         screen_x = 0;
+		previous_buf_length = 0;
+
     } else {
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
         screen_x++;
-		if(screen_x==80){
+		/*increments y and sets x to zero for new line*/
+	if(screen_x==80){
            screen_y++;
 		   screen_x=0;
 		}
         //screen_x %= NUM_COLS;
-        screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+	   
+//        screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+
+		
+		
     }
 }
 
