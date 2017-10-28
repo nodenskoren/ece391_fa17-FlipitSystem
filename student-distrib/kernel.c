@@ -166,7 +166,7 @@ void entry(unsigned long magic, unsigned long addr) {
     printf("Enabling Interrupts\n");
     sti();
     /*init paging*/
-    paging_init();
+    //paging_init();
 
 #ifdef RUN_TESTS
     /* Run tests */

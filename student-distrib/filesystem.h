@@ -46,3 +46,4 @@ extern int32_t directory_file_close();
 extern void test_read_file();
 extern void test_regular_file();
 extern void test_directory_file();
+//extern void test_read_dentry();
