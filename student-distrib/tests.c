@@ -1,6 +1,7 @@
 #include "tests.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "terminal_driver.h"
 
 #define PASS 1
 #define FAIL 0
@@ -65,6 +66,16 @@ void paging_test(){
 // add more tests here
 
 /* Checkpoint 2 tests */
+void echo(){
+   while(1){
+     char buf[128];
+     int bytes_recieved;
+     bytes_recieved = terminal_read(buf,128);
+     terminal_write("echo: ",6);
+     terminal_write(buf,bytes_recieved);
+
+  }
+}
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -80,6 +91,7 @@ void launch_tests(){
 	//printf("hello world");
 	// launch your tests here
 	//paging_test();
+	echo();
 	test_read_file();
 	test_regular_file();
 	test_directory_file();
