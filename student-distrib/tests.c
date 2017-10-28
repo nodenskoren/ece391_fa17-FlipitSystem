@@ -81,7 +81,7 @@ void launch_tests(){
 	// launch your tests here
 	//paging_test();
 	test_read_file();
-	//test_regular_file();
-	//test_directory_file();
+	test_regular_file();
+	test_directory_file();
 	//test_read_dentry();
 }
