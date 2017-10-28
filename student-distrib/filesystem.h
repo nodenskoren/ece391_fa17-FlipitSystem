@@ -39,9 +39,10 @@ extern int32_t regular_file_write();
 extern int32_t regular_file_close();
 
 /* METHODS FOR DIRECTORY FILES */
-extern int32_t directory_file_open(uint8_t* fname);
+extern int32_t directory_file_open();
 extern int32_t directory_file_read(uint8_t* buf, uint32_t length);
 extern int32_t directory_file_write();
 extern int32_t directory_file_close();
 extern void test_read_file();
 extern void test_regular_file();
+extern void test_directory_file();

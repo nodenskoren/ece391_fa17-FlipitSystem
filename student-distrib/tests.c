@@ -69,6 +69,8 @@ void paging_test(){
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
 extern void test_read_file();
+extern void test_regular_file();
+extern void test_directory_file();
 
 /* Test suite entry point */
 /* Test suite entry point */
@@ -79,4 +81,5 @@ void launch_tests(){
 	//paging_test();
 	test_read_file();
 	test_regular_file();
+	test_directory_file();
 }

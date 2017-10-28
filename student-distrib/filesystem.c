@@ -77,7 +77,7 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry){
 		return FAILURE; 
 
 	int8_t* dentry_file_name = (int8_t*)(dentry_addr + DENTRY_OFFSET*index); // get the file name array for the corresponding dentry
-	uint32_t fname_length = strlen((int8_t*)dentry_file_name); // get the fname length
+	fname_length = strlen((int8_t*)dentry_file_name); // get the fname length
 	if(fname_length > FILENAME_MAX) fname_length = FILENAME_MAX; // check if the file name is longer than 32
 	
 	strncpy((int8_t*)dentry->file_name, (int8_t*)dentry_file_name, fname_length); // copy the file name to dentry struct
@@ -243,6 +243,7 @@ void test_regular_file() {
 	for (i = 0; i < 50; i++) {
 		printf("%c", buffer[i]);
 	}
+	printf("\n\n\n");
 	return;
 }
 
@@ -254,12 +255,9 @@ int32_t regular_file_close() {
 	return 0;
 }
 
-int32_t directory_file_open(uint8_t* fname) {
-	if(fname != NULL) {
-		dentry_offset = 0;
-		return 0;
-	}
-	return -1;
+int32_t directory_file_open() {
+	dentry_offset = 0;
+	return 0;
 }
 
 int32_t directory_file_read(uint8_t* buf, uint32_t length) {
@@ -273,11 +271,27 @@ int32_t directory_file_read(uint8_t* buf, uint32_t length) {
 	if(length > 32) {
 		length = 32;
 	}
+	if(fname_length < length) {
+		length = fname_length;
+	}
 	strncpy((int8_t*)buf, (int8_t*)&(dentry.file_name), length);
 	dentry_offset++;
 	return length;
 }
 
+void test_directory_file() {
+	uint8_t file_name_buffer[32];
+	int index;
+	directory_file_open();
+	
+	directory_file_read(file_name_buffer, 32);
+	printf("\n\nDirectory file testing... (There should be only one)");
+	printf("\nTesting the read function...\n");
+	for(index = 0; index < fname_length; index++) {
+		printf("%c", file_name_buffer[index]);
+	}
+	printf("\n\n");
+}
 int32_t directory_file_write() {
 	return -1;
 }
