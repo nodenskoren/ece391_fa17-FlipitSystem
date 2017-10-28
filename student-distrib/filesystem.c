@@ -12,9 +12,6 @@
 #define FILENAME_MAX 32
 
 static boot_block* filesystem_addr;
-static inode_t* inode_field_starting_addr;
-static data_block_t* data_field_starting_addr;
-static dentry_t file_dir;
 static uint32_t file_offset;
 static uint32_t dentry_offset;
 static uint32_t fname_length;
@@ -32,15 +29,13 @@ void filesystem_init(unsigned int boot_address) {
 	dentry_addr = boot_addr + DENTRY_OFFSET;
 	//printf("0x%#x\n", boot_addr);
 	
-	filesystem_addr = (uint32_t*) boot_address;
+	filesystem_addr = (boot_block*) boot_address;
 	printf("%d", filesystem_addr);
 	filesystem_addr->dentry_count = (uint32_t)(*(uint32_t*)boot_addr); // add number of dentry to boot block struct
 	filesystem_addr->inode_count = (uint32_t)(*(uint32_t*)(boot_addr + BOOTBLOCK_INODE_OFFSET)); // add number of inode to boot block struct
 	filesystem_addr->data_block_count = (uint32_t)(*(uint32_t*)(boot_addr+BOOTBLOCK_DATABLOCK_OFFSET)); // add number of data block to boot block struct 
 	inode_start = boot_address + block_size;
 	data_block_start = inode_start + filesystem_addr->inode_count * block_size;
-	inode_field_starting_addr = filesystem_addr + 4096;
-	data_field_starting_addr = inode_field_starting_addr + 4096 * filesystem_addr->inode_count;
 	//printf("%d\n", fs_info->dentry_count);
 	//printf("%d\n", fs_info->inode_count);
 	//printf("%d\n", fs_info->data_block_count);
@@ -59,10 +54,8 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
 	if(fname == NULL || dentry == NULL) {
 		return FAILURE;
 	}
-	
-	
 
-	fname_length = strlen(fname); // get the fname length
+	fname_length = strlen((char*)fname); // get the fname length
 	//printf("%d\n", fname_length);
 	
 	if(fname_length > 32) {
@@ -73,30 +66,32 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
 	
 	for(i = 0; i < DENTRY_MAX_SIZE; i++){
 		dentry_t curr_dentry = filesystem_addr->dentries[i];
-		//printf("%c\n", curr_dentry.file_name[0]);
-		if(strlen(curr_dentry.file_name == fname_length)) {
-			if(strncmp((int8_t*)fname, (int8_t*)curr_dentry.file_name, fname_length) == 0) { // see if the content of the filename matches
-				int index;
-				for(index = 0; index < fname_length; index++) {
-					dentry->file_name[index] = curr_dentry.file_name[index];
-					//printf("%c", dentry->file_name[index]);
-				}
-				dentry->file_type = curr_dentry.file_type;
-				dentry->inode = curr_dentry.inode;	
-				return SUCCESS; 
+		//printf("%c\n", curr_dentry.file_name[0]);		
+		if(strncmp((int8_t*)fname, (int8_t*)curr_dentry.file_name, fname_length) == 0) { // see if the content of the filename matches
+			int index;
+			for(index = 0; index < fname_length; index++) {
+				dentry->file_name[index] = curr_dentry.file_name[index];
+				//printf("%c", dentry->file_name[index]);
 			}
+			dentry->file_type = curr_dentry.file_type;
+			dentry->inode = curr_dentry.inode;	
+			return SUCCESS; 
 		}
 	}
 	
 	return FAILURE; // fule not found, return failure
 }
-/*
+
 void test_read_dentry() {
 	dentry_t dentry;
 	int i;
 	char *p = "verylargetextwithverylongname.txt";	
 	read_dentry_by_name((uint8_t*)p, &(dentry));
-}*/
+	
+	for(i = 0; i < fname_length; i++) {
+		printf("%c", p[i]);
+	}
+}
 
 int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry){
 	
@@ -275,7 +270,6 @@ void test_regular_file() {
 	for (i = 0; i < 33; i++) {
 		printf("%c", buffer[i]);
 	}
-	printf("\n");
 	return;
 }
 
@@ -322,7 +316,7 @@ void test_directory_file() {
 	for(index = 0; index < fname_length; index++) {
 		printf("%c", file_name_buffer[index]);
 	}
-	printf("\n\n");
+	printf("\n");
 }
 int32_t directory_file_write() {
 	return -1;

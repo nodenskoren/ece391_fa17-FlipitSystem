@@ -71,7 +71,7 @@ void paging_test(){
 extern void test_read_file();
 extern void test_regular_file();
 extern void test_directory_file();
-//extern void test_read_dentry();
+extern void test_read_dentry();
 
 /* Test suite entry point */
 /* Test suite entry point */
@@ -83,5 +83,5 @@ void launch_tests(){
 	test_read_file();
 	test_regular_file();
 	test_directory_file();
-	//test_read_dentry();
+	test_read_dentry();
 }
