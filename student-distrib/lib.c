@@ -51,7 +51,7 @@ void clear(void) {
  *       Also note: %x is the only conversion specifier that can use
  *       the "#" modifier to alter output. */
 
-void print_keyboard_buffer(char *buf,int buf_position){
+void print_keyboard_buffer(const char *buf,int buf_position){
         
 	   
 	   int i;

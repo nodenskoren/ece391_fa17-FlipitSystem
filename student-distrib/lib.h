@@ -15,7 +15,7 @@ int8_t *strrev(int8_t* s);
 uint32_t strlen(const int8_t* s);
 void clear(void);
 void scroll_the_page();
-void print_keyboard_buffer(char * buf,int buf_position);
+void print_keyboard_buffer(const char * buf,int buf_position);
 
 void* memset(void* s, int32_t c, uint32_t n);
 void* memset_word(void* s, int32_t c, uint32_t n);

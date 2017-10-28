@@ -5,6 +5,7 @@
 #include "debug.h"
 #include "tests.h"
 #include "keyboard_handler.h"
+#include "terminal_driver.h"
 
 #define KEYBOARD_ENTRY 0x21
 #define  CAPS_LOCK_PRESSED    0x3A  /* Scancodes for actions */
@@ -18,6 +19,8 @@
 #define ENTER_PRESSED         0x1C
 #define CARRIAGE_RETURN       0x0A
 
+#define OPCODE_L              0x26
+
 #define  LOWER_CASE           0
 #define  UPPER_CASE           1
 
@@ -26,7 +29,8 @@
 #define END_OF_RELEASE 0xD8
 #define BEGINNING_OF_PRINTABLE 0x01
 #define END_OF_PRINTABLE 0x39
-#define DELETE 0x0E
+#define DELETE_OPCODE 0x0E
+#define DELETE_ASCII  0x08
 #define KEYBOARD_PORT 0x60
 
 
@@ -36,10 +40,8 @@ int caps_lock_counter = 0;
 int right_shift_flag = 0;
 int left_shift_flag = 0;
 int control_flag = 0;
-/*buffer of text input*/
-char buf[128];
-/*current position in buffer*/
-int buf_position = 0;
+
+
 
 /* This function should be called when the key is pressed and keyboard interrupt is sent to PIC. 
    Prints out the character from port 0x60 */
@@ -50,36 +52,18 @@ unsigned long flags;
 /*used to check if input opcode is letter or number*/
 int is_letter(unsigned int c);
 
-//cli_and_save(flags);
+
 cli();
     unsigned int c = inb(KEYBOARD_PORT);
 	
 sti();
         
 cli_and_save(flags);
-        if(c==DELETE){
-           /*catches backspace does nothing*/
-	   if(buf_position==0){
-             /*do nothing no character to delete*/
-	   }
-	   else{
-	     buf_position--;
-	     buf[buf_position]=NULL;
-             
-	   }
-	}
 
-	else if(c==ENTER_PRESSED){
-	     buf[buf_position] = CARRIAGE_RETURN;
-	     buf_position++;
-	     print_keyboard_buffer(buf,buf_position); 
-             int i;
-	     for(i=0;i<buf_position;i++)
-                buf[i] = NULL;
-	     buf_position=0;
-	     
-	     
+	 if(c==ENTER_PRESSED){
+	      add_to_buffer('\n');
 	}
+	
 
 	else if( c == CAPS_LOCK_PRESSED){
 	  if( caps_lock_flag == 1)
@@ -134,72 +118,46 @@ cli_and_save(flags);
 
 	else if(c>=BEGINNING_OF_PRINTABLE && c <=END_OF_PRINTABLE && control_flag!=1){
             /*printable character pressed---check case status and print*/
-	    if(buf_position==127){
-              //do nothing because buffer is full
-
-	    }
-	    //printf("caps_lock_counter: %d");
-	    else if(caps_lock_counter==0){
+	    
+	    if(caps_lock_counter==0){
 		if(right_shift_flag | left_shift_flag){
-		    //printf("%c", keyboard_mapping_capital[c]);
-		    buf[buf_position] = keyboard_mapping_capital[c];
-		    buf_position++;
+		    add_to_buffer(keyboard_mapping_capital[c]);
 		}
 
 		else{
-		    //printf("%c", keyboard_mapping_lowercase[c]);
-                    buf[buf_position] = keyboard_mapping_lowercase[c];
-		    buf_position++;
+		    add_to_buffer(keyboard_mapping_lowercase[c]);
 		    }
             }
 	    else{
                  if(!(is_letter(c))){
                     if(right_shift_flag | left_shift_flag){
-		      //printf("%c", keyboard_mapping_capital[c]);
-		      buf[buf_position] = keyboard_mapping_capital[c];
-		      buf_position++;
+		      add_to_buffer(keyboard_mapping_capital[c]);
 		    }
 		   
 		    else{
-		      //printf("%c",keyboard_mapping_lowercase[c]);
-		      buf[buf_position] = keyboard_mapping_lowercase[c];
-		      buf_position++;
+		      add_to_buffer(keyboard_mapping_lowercase[c]);
 		   }
 		  }    
                  else{
 		     if(right_shift_flag | left_shift_flag){
-                        //printf("%c", keyboard_mapping_lowercase[c]);
-		        buf[buf_position] = keyboard_mapping_lowercase[c];
-		        buf_position++;
+                        add_to_buffer(keyboard_mapping_lowercase[c]);
 	             }
 
 		 
 		     else{
-		        //printf("%c", keyboard_mapping_capital[c]);
-                        buf[buf_position] = keyboard_mapping_capital[c];
-		        buf_position++;
+		        add_to_buffer(keyboard_mapping_capital[c]);
 		     }
 		 }
-
-
 	    }
-
 	}
-	else if(c == 0x26 && control_flag==1){
-	      int i;
-	      for(i=0;i<buf_position;i++)
-	          buf[i] = NULL;
-	      buf_position = 0;
+	/*triggers clear when control and "L" pressed*/
+	else if(c == OPCODE_L && control_flag==1){
               clear();
+	      clear_buffer();
 	}
 	else{
 	/*character not recognized do nothing*/
 	}
-    //clear();
-if(c!=ENTER_PRESSED)
-   print_keyboard_buffer(buf,buf_position);
-      // printf("%s",buf);
-
     
     send_eoi(1);  //ends interrupt on IRQ1 for keyboard
 
@@ -227,7 +185,7 @@ void keyboard_initialization(){
         SET_IDT_ENTRY(idt[KEYBOARD_ENTRY], &keyboard_interrupt_handler);
         enable_irq(1); // enables keyboard interrupt on IRQ
 	
-        
+       
 
 
 }
