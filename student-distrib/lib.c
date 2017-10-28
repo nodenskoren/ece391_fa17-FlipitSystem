@@ -51,27 +51,31 @@ void clear(void) {
  *       Also note: %x is the only conversion specifier that can use
  *       the "#" modifier to alter output. */
 
+/* print_keyboard_buffer
+ * DESCRIPTION: Used to print currently typed strings
+ * INPUT: buf--array of chars to print
+ *        buf_position--number of bytes in buf to print
+ * OUTPUT: NONE
+ * SIDE_EFFCT: Prints current text buffer contents to display
+ */
 void print_keyboard_buffer(const char *buf,int buf_position){
         
 	   
 	   int i;
-/*
-       if(previous_buf_length==80 && buf_position < 80){
-         //screen_y--; 
-
-	   }
-*/
-      
+       /*moves print position back to where it was at prior print*/
 	   screen_x -=previous_buf_length;
+	   /*makes sure to decrement row if x counter goes negative*/
 	   if(screen_x < 0){
          screen_y--;
 		 screen_x+=NUM_COLS;
 	   }
+	   /*sets everything to zero*/
 	   for(i=0;i<previous_buf_length;i++){
 	       
            printf(" ");
 		     
 		   }
+	   /*sets position back to zero and prints the buffer*/
        screen_x -=previous_buf_length;
         for(i=0; i<buf_position;i++){
 		   
@@ -81,11 +85,6 @@ void print_keyboard_buffer(const char *buf,int buf_position){
 		}
 		if(buf[i-1]!='\n')
 		  previous_buf_length = buf_position;
-
-	   //screen_x = screen_x-(screen_x%NUM_COLS);
-	   
-	   //screen_x = temp;
-	   //return printf("%s",buf);
 
 }
 
@@ -239,15 +238,6 @@ void putc(uint8_t c) {
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
         screen_x++;
-		/*increments y and sets x to zero for new line*/
-		/*
-	if(screen_x==80){
-           screen_y++;
-		   screen_x=0;
-		}
-	if(screen_y == NUM_ROWS)
-	   scroll_the_page();
-		*/
     }
 }
 
@@ -319,18 +309,26 @@ uint32_t strlen(const int8_t* s) {
     return len;
 }
 
+/*scroll_the_page()
+ * DESCRIPTION: moves everything in vga memory up one line
+ * INPUT: NONE
+ * OUTPUT: NONE
+ * SIDE EFFECT: all text moves up a line deleting the top line of text
+ */
 void scroll_the_page(){
      int x;
 	 int y;
+
 	 for(y = 0; y<NUM_ROWS-1; y++){
        for(x = 0;x<NUM_COLS;x++){
+	   /*sets above line to value of line below*/
          *(uint8_t *)(video_mem + ((NUM_COLS * y + x)<<1)) = 
 	       *(uint8_t *)(video_mem + ((NUM_COLS * (y+1) + x)<<1));
 
 		 *(uint8_t *)(video_mem+((NUM_COLS * y +x)<<1)+1) = ATTRIB;
        }
 	 }
-
+     /*clears the bottom line after its contents are moved up one*/
 	 for(x = 0; x<NUM_COLS;x++){
         *(uint8_t *)(video_mem+((NUM_COLS * (NUM_ROWS-1) + x)<<1)) = ' ';
 		*(uint8_t *)(video_mem+((NUM_COLS * (NUM_ROWS-1) + x)<<1)+1) = ATTRIB;

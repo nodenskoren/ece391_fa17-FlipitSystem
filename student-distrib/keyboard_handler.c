@@ -19,6 +19,8 @@
 #define ENTER_PRESSED         0x1C
 #define CARRIAGE_RETURN       0x0A
 
+#define TAB_OPCODE            0x0F
+
 #define OPCODE_L              0x26
 
 #define  LOWER_CASE           0
@@ -61,7 +63,10 @@ sti();
 cli_and_save(flags);
 
 	 if(c==ENTER_PRESSED){
-	      add_to_buffer('\n');
+	      add_to_buffer(CARRIAGE_RETURN);
+	}
+	else if(c==TAB_OPCODE){
+	  /*do nothing for tab just capture value*/
 	}
 	
 
@@ -117,7 +122,7 @@ cli_and_save(flags);
 	}
 
 	else if(c>=BEGINNING_OF_PRINTABLE && c <=END_OF_PRINTABLE && control_flag!=1){
-            /*printable character pressed---check case status and print*/
+            /*printable character pressed---check case status and add to buf*/
 	    
 	    if(caps_lock_counter==0){
 		if(right_shift_flag | left_shift_flag){
@@ -128,6 +133,7 @@ cli_and_save(flags);
 		    add_to_buffer(keyboard_mapping_lowercase[c]);
 		    }
             }
+	    /*caps lock is pressed*/
 	    else{
                  if(!(is_letter(c))){
                     if(right_shift_flag | left_shift_flag){
