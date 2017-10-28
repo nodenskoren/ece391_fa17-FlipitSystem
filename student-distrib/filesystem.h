@@ -34,7 +34,7 @@ extern int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_
 
 /* METHODS FOR REGULAR FILES */
 extern int32_t regular_file_open(uint8_t* fname);
-extern int32_t regular_file_read(uint8_t* buf, uint32_t count);
+extern int32_t regular_file_read(uint8_t* fname, uint8_t* buf, uint32_t count);
 extern int32_t regular_file_write();
 extern int32_t regular_file_close();
 

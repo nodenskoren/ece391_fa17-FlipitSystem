@@ -16,6 +16,7 @@ static inode_t* inode_field_starting_addr;
 static data_block_t* data_field_starting_addr;
 static dentry_t file_dir;
 static uint32_t file_offset;
+static uint32_t dentry_offset;
 static uint32_t fname_length;
 
 #define block_size 4096
@@ -185,42 +186,60 @@ void test_read_file() {
 
 int32_t regular_file_open(uint8_t* fname) {
 	if(fname != NULL) {
-		read_dentry_by_name(fname, &(file_dir));
 		file_offset = 0;
 		return 0;
 	}
 	return -1;
 }
 
-int32_t regular_file_read(uint8_t* buf, uint32_t count) {
-	if((buf == NULL) || (file_dir.file_type != REGULAR_FILE)) {
+int32_t regular_file_read(uint8_t* fname, uint8_t* buf, uint32_t count) {
+	dentry_t dentry;
+	read_dentry_by_name(fname, &(dentry));
+	if((buf == NULL) || (dentry.file_type != REGULAR_FILE)) {
+		printf("Wrong filetype!\n");
 		return -1;
 	}
-	file_offset += read_data(file_dir.inode, file_offset, buf, count);
-	return 0;
+	int32_t length_read;
+	length_read = read_data(dentry.inode, file_offset, buf, count);
+	file_offset += length_read;
+	return length_read;
 }
 
 void test_regular_file() {
-	regular_file_open((uint8_t* )"frame0.txt");
+	dentry_t d_entry;
+	read_dentry_by_name((uint8_t*)"frame0.txt", &(d_entry));
+	//printf("\n%d", d_entry.file_type);
+	/*
+	int index;
+	for(index = 0; index < filesystem_addr->dentry_count; index++){
+		read_dentry_by_index(index, &(d_entry));
+		printf("\n%d", d_entry.file_type);
+	}
+	return;
+	*/
+	if(regular_file_open((uint8_t* )"frame0.txt") != 0) {
+		printf("Invalid file...\n");
+		return;
+	}
 	uint8_t buffer[6000];
 	uint8_t file_name_buffer[32];
 	int i;
-	memcpy((void*)file_name_buffer, (void*)&(file_dir.file_name), fname_length);
+	memcpy((void*)file_name_buffer, (void*)&(d_entry.file_name), fname_length);
 	printf("\n\nRegular file testing...");
 	printf("\nThe opened file name is: ");
 	for (i = 0; i < fname_length; i++) {
 		printf("%c", file_name_buffer[i]);
 	}
 	printf("\nTesting the read function...\n");
-	regular_file_read(buffer, 4);
+	regular_file_read((uint8_t*)"frame0.txt", buffer, 4);
 	for (i = 0; i < 4; i++) {
 		printf("%c", buffer[i]);
 	}
-	regular_file_read(buffer, 100);
+	regular_file_read((uint8_t*)"frame0.txt", buffer, 100);
 	for (i = 0; i < 100; i++) {
 		printf("%c", buffer[i]);
 	}
-	regular_file_read(buffer, 50);
+	regular_file_read((uint8_t*)"frame0.txt", buffer, 50);
 	for (i = 0; i < 50; i++) {
 		printf("%c", buffer[i]);
 	}
@@ -237,29 +256,26 @@ int32_t regular_file_close() {
 
 int32_t directory_file_open(uint8_t* fname) {
 	if(fname != NULL) {
-		read_dentry_by_name(fname, &(file_dir));
-		file_offset = 0;
+		dentry_offset = 0;
 		return 0;
 	}
 	return -1;
 }
 
 int32_t directory_file_read(uint8_t* buf, uint32_t length) {
-	if((buf == NULL) || (file_dir.file_type != DIRECTORY_FILE) || (file_offset >= filesystem_addr->dentry_count) || (read_dentry_by_index(file_offset, &(file_dir)) != 0)) {
+	dentry_t dentry;
+	if((buf == NULL) || (read_dentry_by_index(dentry_offset, &(dentry)) == -1)) {
 		return -1;
 	}
-
+	if(dentry_offset >= filesystem_addr->dentry_count) {
+		return 0;
+	}
 	if(length > 32) {
 		length = 32;
 	}
-	
-	if(fname_length < length) {
-		length = fname_length;
-	}
-	
-	strncpy((int8_t*)buf, (int8_t*)&(file_dir.file_name), length);
-	file_offset++;
-	return 0;
+	strncpy((int8_t*)buf, (int8_t*)&(dentry.file_name), length);
+	dentry_offset++;
+	return length;
 }
 
 int32_t directory_file_write() {
