@@ -68,15 +68,15 @@ void paging_test(){
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
-
+extern void test_read_file();
 
 /* Test suite entry point */
 /* Test suite entry point */
 void launch_tests(){
-	TEST_OUTPUT("idt_test", idt_test());
-	printf("hello world");
+	//TEST_OUTPUT("idt_test", idt_test());
+	//printf("hello world");
 	// launch your tests here
-//	paging_test();
-
-
+	//paging_test();
+	test_read_file();
+	test_regular_file();
 }
