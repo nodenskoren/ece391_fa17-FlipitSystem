@@ -23,6 +23,15 @@ static uint32_t data_block_start;
 unsigned int boot_addr;
 unsigned int dentry_addr;
 
+/* 
+ * filesystem_init
+ *		DESCRIPTION: initialize filesystem and get boot block structure
+ *		INPUTS: boot block address
+ *		OUTPUTS: None
+ *		SIDE EFFECT: initialize static filesystem boot block strucutre
+ *
+ */
+
 void filesystem_init(unsigned int boot_address) {
 	
 	boot_addr = boot_address; //get the pointer that points to the boot block
@@ -30,7 +39,8 @@ void filesystem_init(unsigned int boot_address) {
 	//printf("0x%#x\n", boot_addr);
 	
 	filesystem_addr = (boot_block*) boot_address;
-	printf("%d", filesystem_addr);
+	//printf("%d", filesystem_addr);
+	
 	filesystem_addr->dentry_count = (uint32_t)(*(uint32_t*)boot_addr); // add number of dentry to boot block struct
 	filesystem_addr->inode_count = (uint32_t)(*(uint32_t*)(boot_addr + BOOTBLOCK_INODE_OFFSET)); // add number of inode to boot block struct
 	filesystem_addr->data_block_count = (uint32_t)(*(uint32_t*)(boot_addr+BOOTBLOCK_DATABLOCK_OFFSET)); // add number of data block to boot block struct 
@@ -41,6 +51,16 @@ void filesystem_init(unsigned int boot_address) {
 	//printf("%d\n", fs_info->data_block_count);
 }
 
+
+/* 
+ * read_dentry_by_name
+ *		DESCRIPTION: read dentry structure given a file name
+ *		INPUTS: fname- a char array pointer of file name
+ *              dentry- dentry structure to store the dentry read
+ *		OUTPUTS: 0 if success, -1 if fail
+ *		SIDE EFFECT: store dentry info into dentry structure passed
+ *
+ */
 int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
 	
 	int i;
@@ -82,6 +102,8 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
 	return FAILURE; // fule not found, return failure
 }
 
+
+// helper function for read dentry test
 void test_read_dentry() {
 	dentry_t dentry;
 	int i;
@@ -93,6 +115,16 @@ void test_read_dentry() {
 	}
 }
 
+
+/* 
+ * read_dentry_by_index
+ *		DESCRIPTION: read dentry structure given an index
+ *		INPUTS: index- a dentry index
+ *              dentry- dentry structure to store the dentry read
+ *		OUTPUTS: 0 if success, -1 if fail
+ *		SIDE EFFECT: store dentry info into dentry structure passed
+ *
+ */
 int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry){
 	
 	if((index > filesystem_addr->dentry_count) || dentry == NULL ) // check if the index is out of bound or dentry is null
@@ -109,6 +141,18 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry){
 	return SUCCESS; 	
 }
 
+
+/* 
+ * read_data
+ *		DESCRIPTION: read data from a specific inode given length and offset
+ *		INPUTS: inode - the inode number to be read
+ *              offset - offset in bytes of the starting point of our read
+ *              buf - the buffer for data to be copied
+ *              length - length in bytes to be read
+ *		OUTPUTS: 0 if end of file, -1 if fail, 32 bits number of bytes read
+ *		SIDE EFFECT: store data into buffer passed
+ *
+ */
 int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length){
 	//uint8_t* buf_temp = buf;
 
@@ -167,6 +211,7 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
 	}
 }
 
+/*
 void test_read_file() {
 	clear();
 	printf("Reading file test_case ...\n");
@@ -206,7 +251,17 @@ void test_read_file() {
 	printf("\nread_data success!");
 	return;
 }
+*/
 
+/* 
+ * regular_file_open
+ *		DESCRIPTION: try to open a file
+ *		INPUTS: fname - file name of the file to be opend
+ *              
+ *		OUTPUTS: 0 if success, -1 if fail
+ *		SIDE EFFECT: none
+ *
+ */
 int32_t regular_file_open(uint8_t* fname) {
 	if(fname != NULL) {
 		file_offset = 0;
@@ -215,6 +270,17 @@ int32_t regular_file_open(uint8_t* fname) {
 	return -1;
 }
 
+
+/* 
+ * regular_file_read
+ *		DESCRIPTION: read data from a file
+ *		INPUTS: fname - file name of the file to be read
+ *              buf - the buffer to store the read data
+ *              count - number of bytes to be read
+ *		OUTPUTS: number of bytes read, -1 if fail
+ *		SIDE EFFECT: read data into buffer
+ *
+ */
 int32_t regular_file_read(uint8_t* fname, uint8_t* buf, uint32_t count) {
 	dentry_t dentry;
 	read_dentry_by_name(fname, &(dentry));
@@ -228,6 +294,7 @@ int32_t regular_file_read(uint8_t* fname, uint8_t* buf, uint32_t count) {
 	return length_read;
 }
 
+// helper function to test file read
 void test_regular_file() {
 	dentry_t d_entry;
 	read_dentry_by_name((uint8_t*)"frame0.txt", &(d_entry));
@@ -273,21 +340,59 @@ void test_regular_file() {
 	return;
 }
 
+/* 
+ * regular_file_write
+ *		DESCRIPTION: try to write to a file(not implemented)
+ *		INPUTS: none
+ *              
+ *		OUTPUTS: -1
+ *		SIDE EFFECT: none
+ *
+ */
 int32_t regular_file_write() {
 	return -1;
 }
 
+/* 
+ * regular_file_close
+ *		DESCRIPTION: try to close a file
+ *		INPUTS: fname - none
+ *              
+ *		OUTPUTS: 0
+ *		SIDE EFFECT: none
+ *
+ */
 int32_t regular_file_close() {
 	return 0;
 }
 
+/* 
+ * directory_file_open
+ *		DESCRIPTION: try to open a directory
+ *		INPUTS: none
+ *              
+ *		OUTPUTS: 0
+ *		SIDE EFFECT: none
+ *
+ */
 int32_t directory_file_open() {
 	dentry_offset = 0;
 	return 0;
 }
 
+/* 
+ * directory_file_read
+ *		DESCRIPTION: read dentry name into buffer
+ *		INPUTS: buf - the buffer to store the dentry name
+ *              length - length of file name
+ *              
+ *		OUTPUTS: filename read, -1 if fail, 0 
+ *		SIDE EFFECT: read dentry name into buffer
+ *
+ */
 int32_t directory_file_read(uint8_t* buf, uint32_t length) {
 	dentry_t dentry;
+	// if read fail, return fail
 	if((buf == NULL) || (read_dentry_by_index(dentry_offset, &(dentry)) == -1)) {
 		return -1;
 	}
@@ -305,6 +410,7 @@ int32_t directory_file_read(uint8_t* buf, uint32_t length) {
 	return length;
 }
 
+// helper function to test direcotry read
 void test_directory_file() {
 	uint8_t file_name_buffer[32];
 	int index;
@@ -318,10 +424,30 @@ void test_directory_file() {
 	}
 	printf("\n");
 }
+
+/* 
+ * directory_file_write
+ *		DESCRIPTION: try to write a directory
+ *		INPUTS: none
+ *              
+ *		OUTPUTS: -1
+ *		SIDE EFFECT: none
+ *
+ */
 int32_t directory_file_write() {
 	return -1;
 }
 
+
+/* 
+ * directory_file_close
+ *		DESCRIPTION: try to close a directory
+ *		INPUTS: none
+ *              
+ *		OUTPUTS: 0
+ *		SIDE EFFECT: none
+ *
+ */
 int32_t directory_file_close() {
 	return 0;
 }
