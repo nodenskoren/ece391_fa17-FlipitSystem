@@ -22,6 +22,7 @@
 #define TAB_OPCODE            0x0F
 
 #define OPCODE_L              0x26
+#define ESCAPE_OPCODE         0x01
 
 #define  LOWER_CASE           0
 #define  UPPER_CASE           1
@@ -67,6 +68,9 @@ cli_and_save(flags);
 	}
 	else if(c==TAB_OPCODE){
 	  /*do nothing for tab just capture value*/
+	}
+	else if(c==ESCAPE_OPCODE){
+          /*do nothing for escape just capture value*/
 	}
 	
 
