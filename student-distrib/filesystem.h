@@ -26,10 +26,14 @@ typedef struct data_block_t {
 	uint8_t data[4096];
 } data_block_t;
 
+/* initialize boot block */
 extern void filesystem_init(unsigned int boot_address);
 
+/* read dentry structure into buffer by file name*/
 extern int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry);
+/* read dentry structure into buffer by index*/
 extern int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry);
+/* read data into buffer from an inode*/
 extern int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length);
 
 /* METHODS FOR REGULAR FILES */
@@ -43,7 +47,9 @@ extern int32_t directory_file_open();
 extern int32_t directory_file_read(uint8_t* buf, uint32_t length);
 extern int32_t directory_file_write();
 extern int32_t directory_file_close();
-extern void test_read_file();
+
+/* Test functions */
+//extern void test_read_file();
 extern void test_regular_file();
 extern void test_directory_file();
 extern void test_read_dentry();
