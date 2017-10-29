@@ -12,20 +12,28 @@
 #define RTC_ENTRY      0x28
 #define BIT_6_MASK     0x40
 #define HIGH_BYTE_MASK 0xF0
+#define DEFAULT_RATE   15
+#define MAX_FREQUENCY  1024
+#define MIN_FREQUENCY  2
+#define SUCCESS        0
+#define FAILURE        -1
+#define TRUE           1
 
 /* IMPORTANT NOTE: The following code is inspired by OSDev. The web is available at: http://wiki.osdev.org/RTC */
 
 
 /*
- * initialize_RTC_driver
- *   DESCRIPTION: Initialize the driver for RTC 
- *   INPUTS: none
+ * RTC_open
+ *   DESCRIPTION: Opens the RTC file. Sets the frequency to 2Hz default.
+ *   INPUTS: filename - filename of RTC
  *   OUTPUTS: none
- *   RETURN VALUE: none 
- *   SIDE EFFECTS: Fills in the IDT entry for RTC, enable IRQ8 and set up frequency
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
  */
  
-void initialize_RTC_driver(){
+volatile int RTC_flag = 0;
+ 
+int32_t RTC_open(const uint8_t* filename){
 	
 	/* Fills in IDT entry for RTC */
 	idt[RTC_ENTRY].seg_selector = KERNEL_CS;
@@ -53,6 +61,8 @@ void initialize_RTC_driver(){
     outb(((prev & HIGH_BYTE_MASK) | RATE) , IO_PORT);    // write rate 2Hz to regsiter A
 	
 	enable_irq(IRQ_RTC_NUM);
+	
+	return SUCCESS;
 }
 
 /*
@@ -66,14 +76,103 @@ void initialize_RTC_driver(){
 
 void RTC_interrupt_handler(){
 	
-//	test_interrupts(); //test cases for RTC interrupt
+	printf("1");
+	// test_interrupts(); //test cases for RTC interrupt
 	
 	/* Enable another RTC interrupt */
+
 	outb(REG_C, REG_NUM_PORT);            // select register C
 	cli();                                // make sure the loading is protected
 	inb(IO_PORT);                         // just throw away contents
-	sti();                                
+	RTC_flag = 0;
+	sti();        
 	
 	send_eoi(IRQ_RTC_NUM);                // send EOI
 
 }
+
+/*
+ * RTC_read
+ *   DESCRIPTION: Blocks until the next RTC interrupt comes.
+ *   INPUTS: fd - file descriptor
+			 buf
+			 nbytes - frequency to be written to RTC
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */
+
+int32_t RTC_read(int32_t fd, void* buf, int32_t nbytes){
+	printf("THIS IS THE START\n");
+	//cli();
+	RTC_flag = 1;  // sets the flag to be cleared by another RTC inpterrupt
+	//sti();
+ 	while(RTC_flag){
+		//printf("%d", RTC_flag);
+	}
+	printf("REACHED THE END OF READ");
+	return SUCCESS;
+}
+
+/*
+ * RTC_write
+ *   DESCRIPTION: changes the frequency of RTC interrupts. 
+ *   INPUTS: filename 
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */
+
+int32_t RTC_write(int32_t fd, const uint32_t* buf, int32_t nbytes){
+	
+	if(buf == NULL)    // check if the buf is null
+		return FAILURE;
+	
+	if(nbytes <= 0)    // check if nbytes is a positive number
+		return FAILURE;
+	
+	int frequency = *buf;
+	
+	if( frequency > MAX_FREQUENCY || frequency < MIN_FREQUENCY) // check if the frequency is within the bound
+		return FAILURE;
+	
+	if((frequency & (frequency - 1)) != 0) // check if frequency is power of 2
+		return FAILURE;
+	
+	unsigned int rate = DEFAULT_RATE;
+	while(TRUE){
+		if(frequency == MIN_FREQUENCY)
+			break;
+		frequency = frequency / MIN_FREQUENCY;   // divides the frequency by 2
+		rate--;
+		
+	}
+
+    outb(REG_A, REG_NUM_PORT);		       // set index to register A, disable NMI
+    char prev = inb(IO_PORT);              // get initial value of register A
+    outb(REG_A, REG_NUM_PORT);		       // reset index to A
+    outb(((prev & HIGH_BYTE_MASK) | rate ) , IO_PORT);    // write rate 2Hz to regsiter A	
+	
+	
+	return SUCCESS;
+	
+	
+}
+
+/*
+ * RTC_close
+ *   DESCRIPTION: closes the RTC file.
+ *   INPUTS: ffd - file descriptor
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */
+
+int32_t RTC_close(int32_t fd){
+	
+	return SUCCESS;
+	
+}
+
+
+
