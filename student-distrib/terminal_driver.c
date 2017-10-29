@@ -51,6 +51,9 @@ int32_t terminal_close(){
  *Side effect: coppies command buffer into input buffer
  */
 int32_t terminal_read(char *buf, int32_t nbytes){
+     if(nbytes<0) return -1;
+     if(buf==NULL) return -1;
+     
     /*waits for flag to be set before returning*/
     while(command_ready_flag==-1){}
     cli();
@@ -80,6 +83,11 @@ int32_t terminal_read(char *buf, int32_t nbytes){
  */
 int32_t terminal_write(const char* buf, int32_t nbytes){
     int i = 0;
+
+    /*error cases*/
+    if(nbytes < 0)return -1;
+    if(buf==NULL)return -1;
+
     /*checks if input is an executable file*/
     if(nbytes >= EXECUTABLE_BYTES){
        if(buf[0]==EXECUTABLE_ZERO && buf[1]==EXECUTABLE_ONE &&
@@ -91,6 +99,7 @@ int32_t terminal_write(const char* buf, int32_t nbytes){
 	  }
       
     }
+    /*prints none executable file*/
     while(i<nbytes){
        printf("%c",buf[i]);
        i++;

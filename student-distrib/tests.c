@@ -98,7 +98,7 @@ void launch_tests(){
 	//printf("hello world");
 	// launch your tests here
 	//paging_test();
-       	//echo();
+       echo();
 	test_read_file();
 	test_regular_file();
 	test_directory_file();
