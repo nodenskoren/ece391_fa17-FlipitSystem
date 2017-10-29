@@ -66,6 +66,13 @@ void paging_test(){
 // add more tests here
 
 /* Checkpoint 2 tests */
+
+/*echo
+ *Description: reads from terminal and echo's back to terminal
+ *Input: NONE
+ *Output: NONE
+ *Side Effect: reads last command from terminal and writes it back to terminal
+ */
 void echo(){
    while(1){
      char buf[128];
@@ -91,7 +98,7 @@ void launch_tests(){
 	//printf("hello world");
 	// launch your tests here
 	//paging_test();
-	echo();
+       	//echo();
 	test_read_file();
 	test_regular_file();
 	test_directory_file();
