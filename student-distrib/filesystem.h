@@ -49,7 +49,7 @@ extern int32_t directory_file_write();
 extern int32_t directory_file_close();
 
 /* Test functions */
-//extern void test_read_file();
+extern void test_read_file();
 extern void test_regular_file();
 extern void test_directory_file();
 extern void test_read_dentry();
