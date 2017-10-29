@@ -154,7 +154,7 @@ void entry(unsigned long magic, unsigned long addr) {
 	/*Init the keyboard*/
     keyboard_initialization();
 	/*init the RTC_driver*/
-	initialize_RTC_driver();
+	//initialize_RTC_driver();
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */

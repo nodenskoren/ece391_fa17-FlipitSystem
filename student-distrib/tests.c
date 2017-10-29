@@ -100,7 +100,7 @@ void RTC_test(){
 	void* buf;
 	RTC_open("rtc");
 	int freq = 2;
-	//RTC_write(0, &freq, 4);
+	RTC_write(0, &freq, 4);
 	RTC_read(0, buf, 0);
 	RTC_close(0);
 		
@@ -121,9 +121,12 @@ void launch_tests(){
 	//printf("hello world");
 	// launch your tests here
 	//paging_test();
-       echo();
+	/*
+        echo();
 	test_read_file();
 	test_regular_file();
 	test_directory_file();
 	test_read_dentry();
+	*/
+	RTC_test();
 }
