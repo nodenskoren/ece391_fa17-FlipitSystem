@@ -98,8 +98,8 @@ void echo(){
 void RTC_test(){
 
 	void* buf;
-	RTC_open("rtc");
-	int freq = 2;
+	RTC_open((uint8_t*)"rtc");
+	uint32_t freq = 2;
 	RTC_write(0, &freq, 4);
 	RTC_read(0, buf, 0);
 	RTC_close(0);
