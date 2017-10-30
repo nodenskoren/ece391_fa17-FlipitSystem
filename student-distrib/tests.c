@@ -93,6 +93,7 @@ void echo(){
  * Files: RTC_driver.h
  */
 void RTC_test(){
+    clear();
 	void* buf;
 	RTC_open((uint8_t*)"rtc");
 	uint32_t freq = 2;
