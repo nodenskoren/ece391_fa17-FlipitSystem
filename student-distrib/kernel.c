@@ -154,11 +154,11 @@ void entry(unsigned long magic, unsigned long addr) {
 	/*Init the keyboard*/
     keyboard_initialization();
 	/*init the RTC_driver*/
-	initialize_RTC_driver();
+	//initialize_RTC_driver();
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
-	filesystem_init((unsigned int)((module_t*)mbi->mods_addr)->mod_start);
+    filesystem_init((unsigned int)((module_t*)mbi->mods_addr)->mod_start);
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close

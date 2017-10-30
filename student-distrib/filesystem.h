@@ -53,3 +53,4 @@ extern void test_read_file();
 extern void test_regular_file();
 extern void test_directory_file();
 extern void test_read_dentry();
+extern void print_out_every_file();
