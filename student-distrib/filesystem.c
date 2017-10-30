@@ -1,25 +1,12 @@
 #include "lib.h"
 #include "filesystem.h"
 
-#define BOOTBLOCK_INODE_OFFSET 4
-#define BOOTBLOCK_DATABLOCK_OFFSET 8
-#define DENTRY_OFFSET 64
-#define DENTRY_FILETYPE_OFFSET 32
-#define DENTRY_INODE_OFFST 36
-#define DENTRY_MAX_SIZE 63
-#define SUCCESS 0
-#define FAILURE -1
-#define FILENAME_MAX 32
-
 static boot_block* filesystem_addr;
 static uint32_t file_offset;
 static uint32_t dentry_offset;
 static uint32_t fname_length;
-
-#define block_size 4096
 static uint32_t inode_start;
 static uint32_t data_block_start;
-
 unsigned int boot_addr;
 unsigned int dentry_addr;
 
@@ -65,8 +52,8 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
 	fname_length = strlen((char*)fname); // get the fname length
 	
 	/* If length is greater than 32, truncate the length to 32 (maximum size) of buffer */
-	if(fname_length > 32) {
-		fname_length = 32;
+	if(fname_length > FILENAME_MAX) {
+		fname_length = FILENAME_MAX;
 	}
 	
 	/* Loop over every directory entry and search by name */
@@ -90,13 +77,23 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
 	return FAILURE;
 }
 
-// helper function for read dentry test
+/* 
+ * test_read_dentry
+ *		DESCRIPTION: Test dentry search with oversized file name
+ *		INPUTS: none              
+ *		OUTPUTS: none
+ *		SIDE EFFECT: none
+ *
+ */
 void test_read_dentry() {
+	clear();
+	/* Create local dentry structure */
 	dentry_t dentry;
 	int i;
-	char *p = "verylargetextwithverylongname.txt";	
+	char *p = "verylargetextwithverylongname.txt";
+	/* Search the dentry list by name and copy the name into local structure */
 	read_dentry_by_name((uint8_t*)p, &(dentry));
-	
+	/* Print out the filename to check if the copied entry is correct */
 	for(i = 0; i < fname_length; i++) {
 		printf("%c", p[i]);
 	}
@@ -144,12 +141,12 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
 
 	// if argument doesnt make sense, return -1
 	if((inode < 0) || (inode > (filesystem_addr->inode_count - 1)) || (offset < 0) || (length < 0) || (buf == NULL)){
-		return -1;
+		return FAILURE;
 	}
 	
 	inode_t* current_inode = (inode_t*)(inode_start + inode * block_size);
 	if(offset >= current_inode->length_in_b) {
-		return 0;
+		return END_OF_FILE;
 	}
 
 	// if arguments make sense, we find where and start copy
@@ -194,16 +191,25 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
 	}
 }
 
-// test function to test read data from a file
+/* 
+ * test_read_file
+ *		DESCRIPTION: Test read on text file with oversized file name
+ *		INPUTS: none              
+ *		OUTPUTS: none
+ *		SIDE EFFECT: none
+ *
+ */
 void test_read_file() {
 	clear();
 	printf("Reading file test_case ...\n");
+	//Create local dentry structure and buffers for contents and filename
 	dentry_t test_dentry; //declare a dentry to fetch result from read file function
-	uint8_t buffer[6000];
-	uint8_t file_name_buffer[32];
+	uint8_t buffer[BUFFER_SIZE_TEST];
+	uint8_t file_name_buffer[FILENAME_MAX];
 	extern uint32_t inode_start;
-	//check if this file exist
 	char *p = "verylargetextwithverylongname.txt";
+	
+	/* Check if the file exist */
 	if (read_dentry_by_name((uint8_t* )p, &test_dentry) == -1) {	
 		printf("Invalid read!\n");
 		return;
@@ -212,30 +218,78 @@ void test_read_file() {
 	printf("The file type is: %d\n", test_dentry.file_type); //print file type
 	printf("The file inode number is: %d\n", test_dentry.inode); //print file inode number
 
-	//read data in the data block
-	if (read_data(test_dentry.inode, 0, buffer, 6000) <= 0) {
-		//printf(buffer[6]);
+	/* Read data in the data block */
+	if (read_data(test_dentry.inode, 0, buffer, BUFFER_SIZE_TEST) <= 0) {
 		printf("\nInvalid read_data or end of file!\n");
 		return;
 	}
 	printf("\nThe file length is: %d\n", ((inode_t *)(inode_start + test_dentry.inode * block_size))->length_in_b);
 	int i;
+	/* Copy and print the file name */
 	memcpy((void*)file_name_buffer, (void*)&(test_dentry.file_name), fname_length);
 	printf("The file name is: ");
 	for (i = 0; i < fname_length; i++) {
 		printf("%c", file_name_buffer[i]);
 	}
 	printf("\n");
-	//print data in the file
+	/* Print data in the file */
 	for (i = 0; i < ((inode_t *)(inode_start + test_dentry.inode * block_size))->length_in_b; i++) {
 		printf("%c", buffer[i]);
 	}
 	//print out the data length
 	printf("\nread_data success!\n");
-	
 	return;
 }
 
+/* 
+ * test_read_file_non_text
+ *		DESCRIPTION: Test read on non-text file
+ *		INPUTS: none              
+ *		OUTPUTS: none
+ *		SIDE EFFECT: none
+ *
+ */
+void test_read_file_non_text() {
+	clear();
+	printf("Reading file test_case ...\n");
+	//Create local dentry structure and buffers for contents and filename
+	dentry_t test_dentry; //declare a dentry to fetch result from read file function
+	uint8_t buffer[BUFFER_SIZE_TEST];
+	uint8_t file_name_buffer[FILENAME_MAX];
+	extern uint32_t inode_start;
+	char *p = "testprint";
+	
+	/* Check if the file exist */
+	if (read_dentry_by_name((uint8_t* )p, &test_dentry) == -1) {	
+		printf("Invalid read!\n");
+		return;
+	}
+
+	printf("The file type is: %d\n", test_dentry.file_type); //print file type
+	printf("The file inode number is: %d\n", test_dentry.inode); //print file inode number
+
+	/* Read data in the data block */
+	if (read_data(test_dentry.inode, 0, buffer, BUFFER_SIZE_TEST) <= 0) {
+		printf("\nInvalid read_data or end of file!\n");
+		return;
+	}
+	printf("\nThe file length is: %d\n", ((inode_t *)(inode_start + test_dentry.inode * block_size))->length_in_b);
+	int i;
+	/* Copy and print the file name */
+	memcpy((void*)file_name_buffer, (void*)&(test_dentry.file_name), fname_length);
+	printf("The file name is: ");
+	for (i = 0; i < fname_length; i++) {
+		printf("%c", file_name_buffer[i]);
+	}
+	printf("\n");
+	/* Print data in the file */
+	for (i = 0; i < ((inode_t *)(inode_start + test_dentry.inode * block_size))->length_in_b; i++) {
+		printf("%c", buffer[i]);
+	}
+	//print out the data length
+	printf("\nread_data success!\n");
+	return;
+}
 
 /* 
  * regular_file_open
@@ -249,9 +303,9 @@ void test_read_file() {
 int32_t regular_file_open(uint8_t* fname) {
 	if(fname != NULL) {
 		file_offset = 0;
-		return 0;
+		return SUCCESS;
 	}
-	return -1;
+	return FAILURE;
 }
 
 
@@ -283,58 +337,73 @@ int32_t regular_file_read(uint8_t* fname, uint8_t* buf, uint32_t count) {
 	return length_read;
 }
 
-// helper function to test file read
+/* 
+ * test_regular_file
+ *		DESCRIPTION: Test open/read/write/close functions of regular file.
+ *		INPUTS: none              
+ *		OUTPUTS: none
+ *		SIDE EFFECT: none
+ *
+ */
 void test_regular_file() {
+	clear();
+	/* Create a local dentry structure */
 	dentry_t d_entry;
-	read_dentry_by_name((uint8_t*)"hello", &(d_entry));
-	//printf("\n%d", d_entry.file_type);
-	/*
-	int index;
-	for(index = 0; index < filesystem_addr->dentry_count; index++){
-		read_dentry_by_index(index, &(d_entry));
-		printf("\n%d", d_entry.file_type);
-	}
-	return;
-	*/
-	if(regular_file_open((uint8_t* )"hello") != 0) {
+	/* Search over the dentry for frame0.txt and copy to the local structure */
+	read_dentry_by_name((uint8_t*)"frame0.txt", &(d_entry));
+	if(regular_file_open((uint8_t* )"frame0.txt") != 0) {
 		printf("Invalid file...\n");
 		return;
 	}
-	uint8_t buffer[6000];
-	uint8_t file_name_buffer[32];
+	/* Allocate local buffers for content and filename */
+	uint8_t buffer[BUFFER_SIZE_TEST];
+	uint8_t file_name_buffer[FILE_NAME_MAX_LENGTH];
 	int i;
+	/* Copy the name into the filename buffer */
 	memcpy((void*)file_name_buffer, (void*)&(d_entry.file_name), fname_length);
-	printf("\n\nRegular file testing...");
+	printf("Regular file testing...");
 	printf("\nThe opened file name is: ");
+	/* Print out the filename */
 	for (i = 0; i < fname_length; i++) {
 		printf("%c", file_name_buffer[i]);
 	}
 	printf("\nTesting the read function...\n");
-/*
-	regular_file_read((uint8_t*)"frame1.txt", buffer, 4);
+	/* Below loops test on consecutive reading functionality */
+	/* Shows that unless reopened/closed reading does not need to start from beginning */
+	regular_file_read((uint8_t*)"frame0.txt", buffer, 4);
 	for (i = 0; i < 4; i++) {
 		printf("%c", buffer[i]);
-	} */
-	regular_file_read((uint8_t*)"hello", buffer, 100);
+	}
+	regular_file_read((uint8_t*)"frame0.txt", buffer, 100);
 	for (i = 0; i < 100; i++) {
 		printf("%c", buffer[i]);
 	}
+	regular_file_read((uint8_t*)"frame0.txt", buffer, 50);
+	for (i = 0; i < 50; i++) {
+		printf("%c", buffer[i]);
+	}
+	regular_file_read((uint8_t*)"frame0.txt", buffer, 33);
+	for (i = 0; i < 33; i++) {
+		printf("%c", buffer[i]);
+	}
+	/* Test on write/close functions; not implemented yet but shouldn't create system error */
+	regular_file_write();
+	regular_file_close();
 	return;
 }
 
 /* 
  * regular_file_write
  *		DESCRIPTION: try to write to a file(not implemented)
- *		INPUTS: none
- *              
+ *		INPUTS: none              
  *		OUTPUTS: -1
  *		SIDE EFFECT: none
  *
  */
 int32_t regular_file_write() {
 	/* Print out error message and return */
-	printf("... Write function not implemented yet!\n Now returning...!");
-	return -1;
+	printf("... Write function not implemented yet!\nNow returning...!\n");
+	return FAILURE;
 }
 
 /* 
@@ -349,8 +418,8 @@ int32_t regular_file_write() {
 int32_t regular_file_close() {
 	/* Reset the reading progress (offset) back to 0 */
 	file_offset = 0;
-	printf("File closed. File offset = %d", dentry_offset);
-	return 0;
+	printf("File closed. File offset = %d\n", dentry_offset);
+	return SUCCESS;
 }
 
 /* 
@@ -365,7 +434,7 @@ int32_t regular_file_close() {
 int32_t directory_file_open() {
 	/* Set the reading progress (offset) to 0 */
 	dentry_offset = 0;
-	return 0;
+	return SUCCESS;
 }
 
 /* 
@@ -382,15 +451,15 @@ int32_t directory_file_read(uint8_t* buf, uint32_t length) {
 	dentry_t dentry;
 	/* If the buffer doesn't exist or if the directory entry doesn't exist, return -1 */
 	if((buf == NULL) || (read_dentry_by_index(dentry_offset, &(dentry)) == -1)) {
-		return -1;
+		return FAILURE;
 	}
 	/* If EOF has been reached, read nothing and return 0 */
 	if(dentry_offset >= filesystem_addr->dentry_count) {
-		return 0;
+		return SUCCESS;
 	}
 	/* If the input length is greater than 32, truncate it down to 32 */
-	if(length > 32) {
-		length = 32;
+	if(length > FILENAME_MAX) {
+		length = FILENAME_MAX;
 	}
 	/* If length is still greater the file_name length, truncate it down to to the file_name length */
 	/* If length is smaller than the file_name length, do nothing */
@@ -403,19 +472,33 @@ int32_t directory_file_read(uint8_t* buf, uint32_t length) {
 	return length;
 }
 
-// helper function to test directory read
+/* 
+ * test_directory_file
+ *		DESCRIPTION: Test open/read/write/close functions of directory file.
+ *		INPUTS: None              
+ *		OUTPUTS: None
+ *		SIDE EFFECT: None
+ *
+ */
 void test_directory_file() {
-	uint8_t file_name_buffer[32];
+	clear();
+	/* Allocate local buffer for filename */
+	uint8_t file_name_buffer[FILENAME_MAX];
 	int index;
-	directory_file_open();
 	
-	directory_file_read(file_name_buffer, 32);
-	printf("\n\nDirectory file testing... (There should be only one)");
+	/* Testing open function */
+	directory_file_open();
+	/* Testing read function */
+	directory_file_read(file_name_buffer, FILENAME_MAX);
+	printf("Directory file testing... (There should be only one)");
 	printf("\nTesting the read function...\n");
+	/* Display the filename from filename buffer */
 	for(index = 0; index < fname_length; index++) {
 		printf("%c", file_name_buffer[index]);
 	}
 	printf("\n");
+	directory_file_write();
+	directory_file_close();
 }
 
 /* 
@@ -428,10 +511,9 @@ void test_directory_file() {
  */
 int32_t directory_file_write() {
 	/* Print out error message and return */
-	printf("... Write function not implemented yet!\n Now returning...!");
-	return -1;
+	printf("... Write function not implemented yet!\nNow returning...!\n");
+	return FAILURE;
 }
-
 
 /* 
  * directory_file_close
@@ -444,8 +526,8 @@ int32_t directory_file_write() {
 int32_t directory_file_close() {
 	/* Reset the reading progress (offset) back to 0 */
 	dentry_offset = 0;
-	printf("File closed. Dentry offset = %d", dentry_offset);
-	return 0;
+	printf("File closed. Dentry offset = %d\n", dentry_offset);
+	return SUCCESS;
 }
 
 /* 
@@ -457,37 +539,44 @@ int32_t directory_file_close() {
  *
  */
 void print_out_every_file() {
+	clear();
 	int i;
 	int name_char_index;
 	int space_index;
 	int name_length;
 	int digit;
 	int digit_count;
-	printf("\n");
+	/* Loop over every directory entry with information */
 	for(i = 0; i < filesystem_addr->dentry_count; i++) {
 		digit_count = 0;
 		printf("file_name: ");
 		name_length = strlen((char*)filesystem_addr->dentries[i].file_name);
-		if(name_length > 32) {
-			name_length = 32;
+		if(name_length > FILE_NAME_MAX_LENGTH) {
+			name_length = FILE_NAME_MAX_LENGTH;
 		}
-		for(space_index = 0; space_index < 32 - name_length; space_index++) {
+		/* Allocate space for 32 characters to be displayed */
+		/* Display the file_name and fill the remaining spaces with space character */
+		for(space_index = 0; space_index < FILE_NAME_MAX_LENGTH - name_length; space_index++) {
 			printf(" ");
 		}
 		for(name_char_index = 0; name_char_index < name_length; name_char_index++) {
 			printf("%c", filesystem_addr->dentries[i].file_name[name_char_index]);
 		}
+		/* Print out the file type */
 		printf(", file_type: %d", filesystem_addr->dentries[i].file_type);
-		digit = ((inode_t *)(inode_start + filesystem_addr->dentries[i].inode * (4 * 1024)))->length_in_b;
-		while(digit > 9) {
-			digit /= 10;
+		/* Calculate the digit of file_size */
+		/* Allocate space for 6 digits of numbers to be displayed */
+		/* Display the file_size and fill the remaining spaces with space character */
+		digit = ((inode_t *)(inode_start + filesystem_addr->dentries[i].inode * (BLOCKSIZE)))->length_in_b;
+		while(digit > SINGLE_DIGIT_LARGEST_NUMBER) {
+			digit /= DOUBLE_DIGIT_SMALLEST_NUMBER;
 			digit_count++;
 		}
 		printf(", file_size: ");
-		for(space_index = 0; space_index < 6 - digit_count; space_index++) {
+		for(space_index = 0; space_index < FILE_SIZE_MAX_LENGTH - digit_count; space_index++) {
 			printf(" ");
 		}
-		printf("%d", ((inode_t *)(inode_start + filesystem_addr->dentries[i].inode * (4 * 1024)))->length_in_b);
+		printf("%d", ((inode_t *)(inode_start + filesystem_addr->dentries[i].inode * (BLOCKSIZE)))->length_in_b);
 		printf("\n");
 	}
 }

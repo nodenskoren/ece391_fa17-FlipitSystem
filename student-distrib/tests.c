@@ -2,6 +2,7 @@
 #include "x86_desc.h"
 #include "lib.h"
 #include "terminal_driver.h"
+#include "RTC_driver.h"
 
 #define PASS 1
 #define FAIL 0
@@ -30,8 +31,6 @@ static inline void assertion_failure(){
  * Coverage: Load IDT, IDT definition
  * Files: x86_desc.h/S
  */
-
-
 int idt_test(){
 	TEST_HEADER;
 
@@ -83,6 +82,25 @@ void echo(){
 
   }
 }
+
+/* RTC_test
+ * 
+ * Test that open, read, write and close for RTC is working
+ * Inputs: None
+ * Outputs: prints 1 for different frequencies
+ * Side Effects: None
+ * Coverage: open, read, write and close for RTC
+ * Files: RTC_driver.h
+ */
+void RTC_test(){
+	void* buf;
+	RTC_open((uint8_t*)"rtc");
+	uint32_t freq = 2;
+	RTC_write(0, &freq, 4);
+	RTC_read(0, buf, 0);
+	RTC_close(0);		
+}
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -91,6 +109,7 @@ extern void test_regular_file();
 extern void test_directory_file();
 extern void test_read_dentry();
 extern void print_out_every_file();
+extern void test_read_file_non_text();
 /* Test suite entry point */
 /* Test suite entry point */
 void launch_tests(){
@@ -98,10 +117,12 @@ void launch_tests(){
 	//printf("hello world");
 	// launch your tests here
 	//paging_test();
-    //echo();
-	test_read_file();
-	test_regular_file();
-	test_directory_file();
+	//echo();
+	//RTC_test();
 	//test_read_dentry();
-	print_out_every_file();
+	//test_read_file();
+	//test_read_file_non_text();
+	//test_regular_file();
+	//test_directory_file();
+	print_out_every_file();	
 }
