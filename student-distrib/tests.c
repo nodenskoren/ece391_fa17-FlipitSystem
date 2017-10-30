@@ -118,11 +118,19 @@ void launch_tests(){
 	// launch your tests here
 	//paging_test();
 	//echo();
-	//RTC_test();
+	
 	//test_read_dentry();
+
+	/* Piazza demo 1 */
+	print_out_every_file();	
+	
+	/* Piazza demo 2 */
 	//test_read_file();
+
 	//test_read_file_non_text();
 	//test_regular_file();
 	//test_directory_file();
-	print_out_every_file();	
+	
+	/* Piazza demo 3 */
+	//RTC_test();
 }

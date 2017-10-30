@@ -193,7 +193,7 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
 
 /* 
  * test_read_file
- *		DESCRIPTION: Test read on text file with oversized file name
+ *		DESCRIPTION: Test read on text file
  *		INPUTS: none              
  *		OUTPUTS: none
  *		SIDE EFFECT: none
@@ -201,13 +201,13 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
  */
 void test_read_file() {
 	clear();
-	printf("Reading file test_case ...\n");
-	//Create local dentry structure and buffers for contents and filename
+	//printf("Reading file test_case ...\n");
+	/* Create local dentry structure and buffers for contents and filename */
 	dentry_t test_dentry; //declare a dentry to fetch result from read file function
 	uint8_t buffer[BUFFER_SIZE_TEST];
 	uint8_t file_name_buffer[FILENAME_MAX];
 	extern uint32_t inode_start;
-	char *p = "verylargetextwithverylongname.txt";
+	char *p = "frame0.txt";
 	
 	/* Check if the file exist */
 	if (read_dentry_by_name((uint8_t* )p, &test_dentry) == -1) {	
@@ -215,29 +215,28 @@ void test_read_file() {
 		return;
 	}
 
-	printf("The file type is: %d\n", test_dentry.file_type); //print file type
-	printf("The file inode number is: %d\n", test_dentry.inode); //print file inode number
+	//printf("The file type is: %d\n", test_dentry.file_type); //print file type
+	//printf("The file inode number is: %d\n", test_dentry.inode); //print file inode number
 
 	/* Read data in the data block */
 	if (read_data(test_dentry.inode, 0, buffer, BUFFER_SIZE_TEST) <= 0) {
 		printf("\nInvalid read_data or end of file!\n");
 		return;
 	}
-	printf("\nThe file length is: %d\n", ((inode_t *)(inode_start + test_dentry.inode * block_size))->length_in_b);
+	/* print out the data length */
+	//printf("\nThe file length is: %d\n", ((inode_t *)(inode_start + test_dentry.inode * block_size))->length_in_b);
 	int i;
-	/* Copy and print the file name */
-	memcpy((void*)file_name_buffer, (void*)&(test_dentry.file_name), fname_length);
-	printf("The file name is: ");
-	for (i = 0; i < fname_length; i++) {
-		printf("%c", file_name_buffer[i]);
-	}
-	printf("\n");
 	/* Print data in the file */
 	for (i = 0; i < ((inode_t *)(inode_start + test_dentry.inode * block_size))->length_in_b; i++) {
 		printf("%c", buffer[i]);
 	}
-	//print out the data length
-	printf("\nread_data success!\n");
+	/* Copy and print the file name */
+	memcpy((void*)file_name_buffer, (void*)&(test_dentry.file_name), fname_length);	
+	printf("\n");
+	printf("file_name: ");
+	for (i = 0; i < fname_length; i++) {
+		printf("%c", file_name_buffer[i]);
+	}
 	return;
 }
 
@@ -251,13 +250,13 @@ void test_read_file() {
  */
 void test_read_file_non_text() {
 	clear();
-	printf("Reading file test_case ...\n");
-	//Create local dentry structure and buffers for contents and filename
+	//printf("Reading file test_case ...\n");
+	/* Create local dentry structure and buffers for contents and filename */
 	dentry_t test_dentry; //declare a dentry to fetch result from read file function
 	uint8_t buffer[BUFFER_SIZE_TEST];
 	uint8_t file_name_buffer[FILENAME_MAX];
 	extern uint32_t inode_start;
-	char *p = "testprint";
+	char *p = "hello";
 	
 	/* Check if the file exist */
 	if (read_dentry_by_name((uint8_t* )p, &test_dentry) == -1) {	
@@ -265,29 +264,29 @@ void test_read_file_non_text() {
 		return;
 	}
 
-	printf("The file type is: %d\n", test_dentry.file_type); //print file type
-	printf("The file inode number is: %d\n", test_dentry.inode); //print file inode number
+	//printf("The file type is: %d\n", test_dentry.file_type); //print file type
+	//printf("The file inode number is: %d\n", test_dentry.inode); //print file inode number
 
 	/* Read data in the data block */
 	if (read_data(test_dentry.inode, 0, buffer, BUFFER_SIZE_TEST) <= 0) {
 		printf("\nInvalid read_data or end of file!\n");
 		return;
 	}
-	printf("\nThe file length is: %d\n", ((inode_t *)(inode_start + test_dentry.inode * block_size))->length_in_b);
+	//print out the data length
+	//printf("\nThe file length is: %d\n", ((inode_t *)(inode_start + test_dentry.inode * block_size))->length_in_b);
 	int i;
-	/* Copy and print the file name */
-	memcpy((void*)file_name_buffer, (void*)&(test_dentry.file_name), fname_length);
-	printf("The file name is: ");
-	for (i = 0; i < fname_length; i++) {
-		printf("%c", file_name_buffer[i]);
-	}
-	printf("\n");
 	/* Print data in the file */
 	for (i = 0; i < ((inode_t *)(inode_start + test_dentry.inode * block_size))->length_in_b; i++) {
 		printf("%c", buffer[i]);
 	}
-	//print out the data length
-	printf("\nread_data success!\n");
+	/* Copy and print the file name */
+	memcpy((void*)file_name_buffer, (void*)&(test_dentry.file_name), fname_length);
+	printf("\n");
+	printf("file_name: ");
+	for (i = 0; i < fname_length; i++) {
+		printf("%c", file_name_buffer[i]);
+	}
+	//printf("\nread_data success!\n");
 	return;
 }
 
