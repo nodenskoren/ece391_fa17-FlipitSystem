@@ -74,3 +74,4 @@ extern void test_directory_file();
 extern void test_read_dentry();
 extern void print_out_every_file();
 extern void test_read_file_non_text();
+extern void test_read_index();

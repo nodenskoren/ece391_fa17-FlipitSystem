@@ -91,7 +91,7 @@ void test_read_dentry() {
 	dentry_t dentry;
 	int i;
 	char *p = "verylargetextwithverylongname.txt";
-	/* Search the dentry list by name and copy the name into local structure */
+	/* Search the dentry list by name and copy the dentry into local structure */
 	read_dentry_by_name((uint8_t*)p, &(dentry));
 	/* Print out the filename to check if the copied entry is correct */
 	for(i = 0; i < fname_length; i++) {
@@ -125,6 +125,33 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry){
 	return SUCCESS; 	
 }
 
+/* 
+ * test_read_index
+ *		DESCRIPTION: Test dentry search with index
+ *		INPUTS: none              
+ *		OUTPUTS: none
+ *		SIDE EFFECT: none
+ *
+ */
+void test_read_index() {
+	/* Create local dentry structure */
+	dentry_t dentry;
+	int i;
+	/* Search the dentry list by index and copy the dentry into local structure */
+	read_dentry_by_index(3, &(dentry));
+	/* Print out the filename to check if the copied entry is correct */
+	printf("\n\nFinding file corresponding to index 3:\n");
+	printf("file_name: ");
+	for(i = 0; i < fname_length; i++) {
+		printf("%c", dentry.file_name[i]);
+	}
+	
+	/* Test on non-existing dentry */
+	printf("\n\nTesting on non-existing d_entry:\n");
+	if(read_dentry_by_index(50, &(dentry)) == FAILURE) {
+		printf("Invalid index!\n");
+	}
+}
 
 /* 
  * read_data

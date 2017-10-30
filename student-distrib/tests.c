@@ -110,6 +110,7 @@ extern void test_directory_file();
 extern void test_read_dentry();
 extern void print_out_every_file();
 extern void test_read_file_non_text();
+extern void test_read_index();
 /* Test suite entry point */
 /* Test suite entry point */
 void launch_tests(){
@@ -133,4 +134,7 @@ void launch_tests(){
 	
 	/* Piazza demo 3 */
 	//RTC_test();
+	
+	/* Piazza demo 5 */
+	test_read_index();
 }
