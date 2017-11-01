@@ -51,9 +51,9 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
 
 	fname_length = strlen((char*)fname); // get the fname length
 	
-	/* If length is greater than 32, truncate the length to 32 (maximum size) of buffer */
+	/* If length is greater than 32 file name is not valid, return fail */
 	if(fname_length > FILENAME_MAX) {
-		fname_length = FILENAME_MAX;
+		return FAILURE;
 	}
 	
 	/* Loop over every directory entry and search by name */
