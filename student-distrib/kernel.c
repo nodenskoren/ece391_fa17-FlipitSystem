@@ -13,6 +13,7 @@
 #include "RTC_driver.h"
 #include "paging.h"
 #include "filesystem.h"
+#include "systemcall.h"
 
 #define RUN_TESTS
 
@@ -168,6 +169,8 @@ void entry(unsigned long magic, unsigned long addr) {
     /*init paging*/
     //paging_init();
 
+	execute("shell");
+	
 #ifdef RUN_TESTS
     /* Run tests */
 
