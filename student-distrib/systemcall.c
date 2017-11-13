@@ -21,18 +21,46 @@
 pcb_t* active_process;
 uint32_t pid_array[8];
 
-uint32_t stdin_jmp_table[4] = {0, (uint32_t)terminal_read, 0, 0};
-uint32_t stdout_jmp_table[4] = {0, 0, (uint32_t)terminal_write, 0};
-uint32_t rtc_jmp_table[4] = {(uint32_t)RTC_open, (uint32_t)RTC_read, (uint32_t)RTC_write, (uint32_t)RTC_close};
-uint32_t file_jmp_table[4] = {(uint32_t)regular_file_open, (uint32_t)regular_file_read, (uint32_t)regular_file_write, (uint32_t)regular_file_close};
-uint32_t dir_jmp_table[4] = {(uint32_t)directory_file_open, (uint32_t)directory_file_read, (uint32_t)directory_file_write, (uint32_t)directory_file_close};	
+/* jump tables for different operations */
+int32_t stdin_jmp_table[NUM_OF_OP] = {0, (int32_t)terminal_read, 0, 0};
+int32_t stdout_jmp_table[NUM_OF_OP] = {0, 0, (int32_t)terminal_write, 0};
+int32_t rtc_jmp_table[NUM_OF_OP] = {(int32_t)RTC_open, (int32_t)RTC_read, (int32_t)RTC_write, (int32_t)RTC_close};
+int32_t file_jmp_table[NUM_OF_OP] = {(int32_t)regular_file_open, (int32_t)regular_file_read, (int32_t)regular_file_write, (int32_t)regular_file_close};
+int32_t dir_jmp_table[NUM_OF_OP] = {(int32_t)directory_file_open, (int32_t)directory_file_read, (int32_t)directory_file_write, (int32_t)directory_file_close};	
 
+/* type define the open functions */
+typedef int32_t (*open_t)(char*);
 
+/* type define the read functions */
+typedef int32_t (*read_t)(int32_t, void*, int32_t);
+
+/* type define the close functions */
+typedef int32_t (*write_t)(int32_t, void*, int32_t);
+
+/* type define the close functions */
+typedef int32_t (*close_t)(int32_t);
+
+/* 
+ * stdin_init
+ *		DESCRIPTION: Open a new stdin file at the corresponding fd index in the file descriptor table
+ *		INPUTS: fd (the desired index of the file descriptor table to open the file on)              
+ *		OUTPUTS: none
+ *		SIDE EFFECT: corresponding entry inside the file descriptor table will have an active stdin file
+ *
+ */
 void stdin_init(int32_t fd) {
 	active_process->file_descriptor_table[fd].f_op = stdin_jmp_table;
 	active_process->file_descriptor_table[fd].active = ACTIVE;
 }
 
+/* 
+ * stdout_init
+ *		DESCRIPTION: Open a new stdout file at the corresponding fd index in the file descriptor table
+ *		INPUTS: fd (the desired index of the file descriptor table to open the file on)              
+ *		OUTPUTS: none
+ *		SIDE EFFECT: corresponding entry inside the file descriptor table will have an active stdout file
+ *
+ */
 void stdout_init(int32_t fd) {
 	active_process->file_descriptor_table[fd].f_op = stdout_jmp_table;
 	active_process->file_descriptor_table[fd].active = ACTIVE;
@@ -58,12 +86,12 @@ int32_t execute(const uint8_t * command){
   }
 
   // allocate a filename buffer
-  uint8_t filename_buf [32];
+  uint8_t filename_buf [FILE_NAME_MAX_SIZE];
   int filename_cnt = 0;
   int i = 0;
 
   // loop through the command to get the file name
-  while(command[i] != ' ' && i < 32)
+  while(command[i] != ' ' && i < FILE_NAME_MAX_SIZE)
   {
     filename_buf[i] = command[i];
     i++;
@@ -108,16 +136,16 @@ int32_t execute(const uint8_t * command){
 	  i++;
   }
   
-  
+  pid_array[i] = 1;
   // store pcb to 8MB - (pid+1) * 8kb
-  pcb_t* current_pcb = (pcb_t*)(0x800000 - (i + 1) * 0x2000);
+  pcb_t* current_pcb = (pcb_t*)(EIGHT_MEGABYTES - (i + 1) * EIGHT_KILOBYTES);
   current_pcb->pid = i;
   current_pcb->esp = NULL;
   current_pcb->ebp = NULL;
   
   // see if we need to store parent pcb pointer
   if( active_process != NULL){
-	  current_pcb->parent_pcb = (pcb_t*)(0x800000 - (active_process->pid + 1) * 0x2000);
+	  current_pcb->parent_pcb = (pcb_t*)(EIGHT_MEGABYTES - (active_process->pid + 1) * EIGHT_KILOBYTES);
   }
   else{
 	  current_pcb->parent_pcb = NULL;
@@ -133,84 +161,148 @@ int32_t execute(const uint8_t * command){
   user_page_init(current_pcb->pid);
   
   // loads the file into memory
-  read_data(dentry.inode,0,file_start,four_mb-file_offset);  
+  read_data(dentry.inode, 0, file_start,four_mb-file_offset);  
  
   // gets the entry point from the file
   uint32_t entry_point = 0;
   uint8_t buf[4];
-  read_data(dentry.inode, 24, buf, 4);
-  entry_point = (buf[3] << 24) | (buf[2] << 16) | (buf[1] << 8) | buf[0]; 
+  read_data(dentry.inode, EXECUTE_BYTE_OFFSET, buf, 4);
+  entry_point = (buf[3] << FIRST_QUARTER_THIRTYTWO) | (buf[2] << SECOND_QUARTER_THIRTYTWO) | (buf[1] << THIRD_QUARTER_THIRTYTWO) | buf[0]; 
 
-  uint32_t user_esp = 0x08400000;
+  uint32_t user_esp = USER_ESP;
   
   // update tss before iret
-  tss.esp0 = (0x800000 - i * 0x2000);
+  tss.esp0 = (EIGHT_MEGABYTES - i * EIGHT_KILOBYTES - USER_OFFSET);
   tss.ss0 = KERNEL_DS;
   
   asm volatile (
-  	"pushl $0x002B			\n \
-	 pushl $0x08400000			\n \
+  	"pushl %%eax			\n \
+	 pushl %%ebx			\n \
 	 pushfl                         \n \
 	 popl %%ebx                     \n \
 	 orl $0x00000200,%%ebx          \n \
 	 pushl %%ebx                    \n \
-	 pushl $0x0023			\n \
-	 pushl $134513384			\n \
+	 pushl %%ecx			\n \
+	 pushl %%edx			\n \
 	 iret                     \n \
 	 EXECUTE_RETURN:"
-	:	
-	: 
-	: "memory"); 	
+	:
+	: "a"(USER_DS), "b"(USER_ESP), "c"(USER_CS), "d"(entry_point)
+	: "memory");
 
 	
 	return 0;
   
 }
 
-
+/* 
+ * read
+ *		DESCRIPTION: Utilize the jump table of the specified file type  
+ *		INPUTS: fd (the desired index of the file descriptor table to read the file from)
+ *              buf (buffer containing the contents to read to file)
+ *              nbytes (how many bytes to read)
+ *		OUTPUTS: none
+ *		SIDE EFFECT: none
+ *
+ */
 int32_t read(int32_t fd, void* buf, int32_t nbytes) {
-	int32_t bytes_read = terminal_read(buf, nbytes);
+	/* If the entry has not been opened, invalidate the call */
+	if(active_process->file_descriptor_table[fd].active != ACTIVE) {
+		return FAILURE;
+	}
+	/* If the fd given is not within the range, the buffer doesn't exist, or the bytes is not in a valid range */
+	/* return FAILURE */
+	if(fd < 0 || fd > 7 || buf == NULL || nbytes < 0) {
+		return FAILURE;
+	}
+	/* Apply the specific read for the given file type */
+	int32_t* jmp_table = active_process->file_descriptor_table[fd].f_op;
+	read_t read_func = (read_t)jmp_table[READ];
+	int32_t bytes_read = read_func(fd, buf, nbytes);
+	active_process->file_descriptor_table[fd].f_offset += bytes_read;
 	return bytes_read;
 }
 
-int32_t write(int32_t fd, const void* buf, int32_t nbytes) {
-	terminal_write(buf, nbytes);
+/* 
+ * write
+ *		DESCRIPTION: Utilize the jump table of the specified file type  
+ *		INPUTS: fd (the desired index of the file descriptor table to write the buffer to)
+ *              buf (buffer containing the contents to write to file)
+ *              nbytes (how many bytes to write)
+ *		OUTPUTS: none
+ *		SIDE EFFECT: none
+ *
+ */
+int32_t write(int32_t fd, void* buf, int32_t nbytes) {
+	/* If the entry has not been opened, invalidate the call */
+	if(active_process->file_descriptor_table[fd].active != ACTIVE) {
+		return FAILURE;
+	}
+	/* If the fd given is not within the range, the buffer doesn't exist, or the bytes is not in a valid range */
+	/* return FAILURE */
+	if(fd < 0 || fd > 7 || buf == NULL || nbytes < 0) {
+		return FAILURE;
+	}
+	
+	/* Apply the specific write for the given file type */
+	int32_t* jmp_table = active_process->file_descriptor_table[fd].f_op;	
+	write_t write_func = (write_t)jmp_table[WRITE];
+	write_func(fd, buf, nbytes);
 	return SUCCESS;
 }
 
+/* 
+ * open
+ *		DESCRIPTION: Open a file at a free entry inside the file descriptor table
+ *		INPUTS: filename (desided filename to open)
+ *		OUTPUTS: none
+ *		SIDE EFFECT: A new entry will be turned active and associated to
+ *                   the new file if there file descriptor table is not fully loaded.
+ *
+ */
 int32_t open(const uint8_t* filename) {
+	//printf("FILE_OPEN!_1");
 	pcb_t* curr_process = active_process;
 	file_t* fds = curr_process->file_descriptor_table;
 	dentry_t d_entry;
 
+	/* Find an empty entry inside the file descriptor table */
 	uint32_t fd = 0;
 	while(fds[fd].active != 0) {
 		fd++;
 	}
+	//printf("FILE_OPEN!_2");
 
+	/* If file descriptor table is fully loaded already, return failure */
 	if(fd <= 7 && read_dentry_by_name(filename, &d_entry) >= 0) {
+		//printf("FILE_OPEN!_3");
+		/* Set the activate flag of the fd entry and specify the corresponding operation sets */
 		switch(d_entry.file_type) {
-			case 0: // RTC
-				fds[fd].f_op = rtc_jmp_table;
+			/* RTC */
+			case RTC_FILE:
+ 				fds[fd].f_op = rtc_jmp_table;
 				fds[fd].inode = NULL;
 				fds[fd].f_offset = 0;
 				fds[fd].active = ACTIVE;
+				//fds[fd].fname = filename;
 				RTC_open(filename);
 				return SUCCESS;
-
-			case 1: // Directory
+			/* Directory */
+			case DIRECTORY_FILE: 
 				fds[fd].f_op = dir_jmp_table;
 				fds[fd].inode = NULL;
 				fds[fd].f_offset = 0;
 				fds[fd].active = ACTIVE;
+				//fds[fd].fname = filename;
 				directory_file_open();
 				return SUCCESS;
-
-			case 2:	// File
+			/* Regular file */
+			case REGULAR_FILE:
 				fds[fd].f_op = file_jmp_table;
-				fds[fd].inode = (uint32_t*)(inode_start + d_entry.inode * 4096);
+				fds[fd].inode = d_entry.inode;
 				fds[fd].f_offset = 0;
 				fds[fd].active = ACTIVE;
+				//fds[fd].fname = filename;
 				regular_file_open(filename);
 				return SUCCESS;
 
@@ -221,14 +313,17 @@ int32_t open(const uint8_t* filename) {
 	return FAILURE;
 }
 
+/* 
+ * close
+ *		DESCRIPTION: Change the flag of the file specified by the fd to inactive
+ *		INPUTS: fd (the desired index of the file descriptor table to close)
+ *		OUTPUTS: none
+ *		SIDE EFFECT: Corresponding entry of the file descriptor table will be marked inactive.
+ *
+ */
 int32_t close(int32_t fd) {
-	pcb_t* curr_process = active_process;
-	file_t fds[8];
-	int i;
-	for(i = 0; i < 8; i++) {
-		fds[i] = curr_process->file_descriptor_table[i];
-	}
-	fds[fd].active = INACTIVE;
+	/* Turn off the active flag of the entry specified by fd */
+	active_process->file_descriptor_table[fd].active = INACTIVE;
 	return 0;
 }
 

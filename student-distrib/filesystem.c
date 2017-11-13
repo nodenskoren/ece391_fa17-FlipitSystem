@@ -1,14 +1,16 @@
 #include "lib.h"
 #include "filesystem.h"
+#include "systemcall.h"
 
 static boot_block* filesystem_addr;
-static uint32_t file_offset;
-static uint32_t dentry_offset;
+//static uint32_t file_offset;
+//static uint32_t dentry_offset;
 static uint32_t fname_length;
 static uint32_t data_block_start;
 unsigned int boot_addr;
 unsigned int dentry_addr;
-extern uint32_t inode_start;
+uint32_t inode_start;
+extern pcb_t* active_process;
 
 /* 
  * filesystem_init
@@ -60,6 +62,18 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
 	for(i = 0; i < DENTRY_MAX_SIZE; i++){
 		/* Create a local dentry structure and copy the directory info of current entry into it */
 		dentry_t curr_dentry = filesystem_addr->dentries[i];
+		
+		if(fname_length != strlen((char*)curr_dentry.file_name) && fname_length != 32) {
+			continue;
+		}
+		/*
+		int j;
+		for (j = 0; j < strlen((char*)curr_dentry.file_name); j++) {
+			printf("%c", curr_dentry.file_name[j]);
+		}
+		printf("\n");
+		printf("%d\n", strlen((char*)curr_dentry.file_name));
+		printf("%d\n", fname_length);*/
 		/* Check if the filename matches */
 		if(strncmp((int8_t*)fname, (int8_t*)curr_dentry.file_name, fname_length) == 0) { 
 			int index;
@@ -328,7 +342,7 @@ void test_read_file_non_text() {
  */
 int32_t regular_file_open(const uint8_t* fname) {
 	if(fname != NULL) {
-		file_offset = 0;
+		//file_offset = 0;
 		return SUCCESS;
 	}
 	return FAILURE;
@@ -338,28 +352,28 @@ int32_t regular_file_open(const uint8_t* fname) {
 /* 
  * regular_file_read
  *		DESCRIPTION: read data from a file
- *		INPUTS: fname - file name of the file to be read
+ *		INPUTS: fd - The index of the file_struct inside the file descriptor table
  *              buf - the buffer to store the read data
  *              count - number of bytes to be read
  *		OUTPUTS: number of bytes read, -1 if fail
  *		SIDE EFFECT: read data into buffer
  *
  */
-int32_t regular_file_read(const uint8_t* fname, uint8_t* buf, uint32_t count) {
+int32_t regular_file_read(int32_t fd, uint8_t* buf, uint32_t count) {
 	/* Define a local dentry */
-	dentry_t dentry;
+	//dentry_t dentry;
 	/* Call the read_dentry_by_name function to find the file info and copy it to the local dentry */
-	read_dentry_by_name(fname, &(dentry));
+	//read_dentry_by_name(fname, &(dentry));
 	/* If the buffer doesn't exist or if the filetype isn't supported by this method, return with error message */
-	if((buf == NULL) || (dentry.file_type != REGULAR_FILE)) {
-		printf("Wrong filetype!\n");
+	if((buf == NULL) /*|| (dentry.file_type != REGULAR_FILE)*/) {
+		printf("INVALID BUFFER!\n");
 		return -1;
 	}
 	int32_t length_read;
 	/* Read the data by calling read_data function */
-	length_read = read_data(dentry.inode, file_offset, buf, count);
+	length_read = read_data(active_process->file_descriptor_table[fd].inode, active_process->file_descriptor_table[fd].f_offset, buf, count);
 	/* Add the progress read */
-	file_offset += length_read;
+	//file_offset += length_read;
 	return length_read;
 }
 
@@ -372,30 +386,24 @@ int32_t regular_file_read(const uint8_t* fname, uint8_t* buf, uint32_t count) {
  *
  */
 void test_regular_file() {
+	/*
 	clear();
-	/* Create a local dentry structure */
 	dentry_t d_entry;
-	/* Search over the dentry for frame0.txt and copy to the local structure */
 	read_dentry_by_name((uint8_t*)"frame0.txt", &(d_entry));
 	if(regular_file_open((uint8_t* )"frame0.txt") != 0) {
 		printf("Invalid file...\n");
 		return;
 	}
-	/* Allocate local buffers for content and filename */
 	uint8_t buffer[BUFFER_SIZE_TEST];
 	uint8_t file_name_buffer[FILE_NAME_MAX_LENGTH];
 	int i;
-	/* Copy the name into the filename buffer */
 	memcpy((void*)file_name_buffer, (void*)&(d_entry.file_name), fname_length);
 	printf("Regular file testing...");
 	printf("\nThe opened file name is: ");
-	/* Print out the filename */
 	for (i = 0; i < fname_length; i++) {
 		printf("%c", file_name_buffer[i]);
 	}
 	printf("\nTesting the read function...\n");
-	/* Below loops test on consecutive reading functionality */
-	/* Shows that unless reopened/closed reading does not need to start from beginning */
 	regular_file_read((uint8_t*)"frame0.txt", buffer, 4);
 	for (i = 0; i < 4; i++) {
 		printf("%c", buffer[i]);
@@ -412,21 +420,22 @@ void test_regular_file() {
 	for (i = 0; i < 33; i++) {
 		printf("%c", buffer[i]);
 	}
-	/* Test on write/close functions; not implemented yet but shouldn't create system error */
 	regular_file_write();
 	regular_file_close();
-	return;
+	return; */
 }
 
 /* 
  * regular_file_write
  *		DESCRIPTION: try to write to a file(not implemented)
- *		INPUTS: none              
+ *		INPUTS: fd - The index of the file_struct inside the file descriptor table
+ *              buf - the buffer to store the write data
+ *              count - number of bytes to be write to the file        
  *		OUTPUTS: -1
  *		SIDE EFFECT: none
  *
  */
-int32_t regular_file_write() {
+int32_t regular_file_write(int32_t fd, const uint8_t* buf, uint32_t count) {
 	/* Print out error message and return */
 	printf("... Write function not implemented yet!\nNow returning...!\n");
 	return FAILURE;
@@ -435,16 +444,16 @@ int32_t regular_file_write() {
 /* 
  * regular_file_close
  *		DESCRIPTION: try to close a file
- *		INPUTS: fname - none
+ *		INPUTS: fd - the index of the file descriptor table to close
  *              
  *		OUTPUTS: 0
  *		SIDE EFFECT: none
  *
  */
-int32_t regular_file_close() {
+int32_t regular_file_close(int32_t fd) {
 	/* Reset the reading progress (offset) back to 0 */
-	file_offset = 0;
-	printf("File closed. File offset = %d\n", dentry_offset);
+	//file_offset = 0;
+	printf("File closed.\n");
 	return SUCCESS;
 }
 
@@ -459,7 +468,7 @@ int32_t regular_file_close() {
  */
 int32_t directory_file_open() {
 	/* Set the reading progress (offset) to 0 */
-	dentry_offset = 0;
+	//dentry_offset = 0;
 	return SUCCESS;
 }
 
@@ -473,14 +482,14 @@ int32_t directory_file_open() {
  *		SIDE EFFECT: read dentry name into buffer
  *
  */
-int32_t directory_file_read(uint8_t* buf, uint32_t length) {
+int32_t directory_file_read(int32_t fd, uint8_t* buf, uint32_t length) {
 	dentry_t dentry;
 	/* If the buffer doesn't exist or if the directory entry doesn't exist, return -1 */
-	if((buf == NULL) || (read_dentry_by_index(dentry_offset, &(dentry)) == -1)) {
+	if((buf == NULL) || (read_dentry_by_index(active_process->file_descriptor_table[fd].f_offset, &(dentry)) == -1)) {
 		return FAILURE;
 	}
 	/* If EOF has been reached, read nothing and return 0 */
-	if(dentry_offset >= filesystem_addr->dentry_count) {
+	if(active_process->file_descriptor_table[fd].f_offset >= filesystem_addr->dentry_count) {
 		return SUCCESS;
 	}
 	/* If the input length is greater than 32, truncate it down to 32 */
@@ -494,7 +503,7 @@ int32_t directory_file_read(uint8_t* buf, uint32_t length) {
 	}
 	/* Copy the string to the buffer */
 	strncpy((int8_t*)buf, (int8_t*)&(dentry.file_name), length);
-	dentry_offset++;
+	//dentry_offset++;
 	return length;
 }
 
@@ -507,35 +516,40 @@ int32_t directory_file_read(uint8_t* buf, uint32_t length) {
  *
  */
 void test_directory_file() {
+	/*
 	clear();
-	/* Allocate local buffer for filename */
+
 	uint8_t file_name_buffer[FILENAME_MAX];
 	int index;
 	
-	/* Testing open function */
+
 	directory_file_open();
-	/* Testing read function */
+
 	directory_file_read(file_name_buffer, FILENAME_MAX);
 	printf("Directory file testing... (There should be only one)");
 	printf("\nTesting the read function...\n");
-	/* Display the filename from filename buffer */
+
 	for(index = 0; index < fname_length; index++) {
 		printf("%c", file_name_buffer[index]);
 	}
 	printf("\n");
 	directory_file_write();
 	directory_file_close();
+	*/
 }
 
 /* 
  * directory_file_write
  *		DESCRIPTION: Try to write a directory (does nothing and should print out a message showing that calling it won't cause problems)
  *		INPUTS: none  
+ *		INPUTS: fd - The index of the file_struct inside the file descriptor table
+ *              buf - the buffer to store the write data
+ *              count - number of bytes to be write to the file
  *		OUTPUTS: -1
  *		SIDE EFFECT: None
  *
  */
-int32_t directory_file_write() {
+int32_t directory_file_write(int32_t fd, const uint8_t* buf, uint32_t count) {
 	/* Print out error message and return */
 	printf("... Write function not implemented yet!\nNow returning...!\n");
 	return FAILURE;
@@ -544,15 +558,15 @@ int32_t directory_file_write() {
 /* 
  * directory_file_close
  *		DESCRIPTION: Try to close a directory
- *		INPUTS: None
+ *		INPUTS: fd - the index of the file descriptor table to close
  *		OUTPUTS: Always return 0
  *		SIDE EFFECT: Resets the offset to 0.
  *
  */
-int32_t directory_file_close() {
+int32_t directory_file_close(int32_t fd) {
 	/* Reset the reading progress (offset) back to 0 */
-	dentry_offset = 0;
-	printf("File closed. Dentry offset = %d\n", dentry_offset);
+	//dentry_offset = 0;
+	printf("File closed.\n");
 	return SUCCESS;
 }
 

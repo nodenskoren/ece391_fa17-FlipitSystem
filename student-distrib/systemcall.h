@@ -2,10 +2,29 @@
 #define FAILURE -1
 #define ACTIVE 1
 #define INACTIVE 0
+#define USER_ESP 0x08400000
+#define EIGHT_MEGABYTES 0x800000
+#define EIGHT_KILOBYTES 0x2000
+#define FOUR_KILOBYTES 4096
+#define USER_OFFSET 4
+#define EXECUTE_BYTE_OFFSET 24
+#define FIRST_QUARTER_THIRTYTWO 24
+#define SECOND_QUARTER_THIRTYTWO 16
+#define THIRD_QUARTER_THIRTYTWO 8
+#define FILE_NAME_MAX_SIZE 32
+#define EIP_VALUE 134513384
+#define OPEN 0
+#define READ 1
+#define WRITE 2
+#define CLOSE 3
+#define NUM_OF_OP 4
+#define RTC_FILE 0
+#define DIRECTORY_FILE 1
+#define REGULAR_FILE 2
 #include "types.h"
 
 typedef struct file_t{
-	uint32_t* f_op;
+	int32_t* f_op;
 	uint32_t inode;
 	uint32_t f_offset;
 	uint32_t active;
@@ -23,7 +42,7 @@ typedef struct pcb_t{
 
 
 extern int32_t read(int32_t fd, void* buf, int32_t nbytes);
-extern int32_t write(int32_t fd, const void* buf, int32_t nbytes);
+extern int32_t write(int32_t fd, void* buf, int32_t nbytes);
 extern int32_t open(const uint8_t* filename);
 extern int32_t close(int32_t fd);
 extern void stdin_init(int32_t fd);

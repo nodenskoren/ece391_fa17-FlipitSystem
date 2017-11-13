@@ -21,7 +21,7 @@
 #define BUFFER_SIZE_TEST 6000
 #define END_OF_FILE 0
 
-static uint32_t inode_start;
+extern uint32_t inode_start;
 
 typedef struct dentry_t {
 	uint8_t file_name[FILE_NAME_MAX_LENGTH];
@@ -59,15 +59,15 @@ extern int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_
 
 /* METHODS FOR REGULAR FILES */
 extern int32_t regular_file_open(const uint8_t* fname);
-extern int32_t regular_file_read(const uint8_t* fname, uint8_t* buf, uint32_t count);
-extern int32_t regular_file_write();
-extern int32_t regular_file_close();
+extern int32_t regular_file_read(int32_t fd, uint8_t* buf, uint32_t count);
+extern int32_t regular_file_write(int32_t fd, const uint8_t* buf, uint32_t count);
+extern int32_t regular_file_close(int32_t fd);
 
 /* METHODS FOR DIRECTORY FILES */
 extern int32_t directory_file_open();
-extern int32_t directory_file_read(uint8_t* buf, uint32_t length);
-extern int32_t directory_file_write();
-extern int32_t directory_file_close();
+extern int32_t directory_file_read(int32_t fd, uint8_t* buf, uint32_t length);
+extern int32_t directory_file_write(int32_t fd, const uint8_t* buf, uint32_t count);
+extern int32_t directory_file_close(int32_t fd);
 
 /* Test functions */
 extern void test_read_file();
