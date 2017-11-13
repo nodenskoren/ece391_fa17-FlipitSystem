@@ -3,12 +3,15 @@
 #include "i8259.h"
 #include "initialize_idt.h"
 #include "RTC_driver.h"
+#include "systemcall.h"
+#include "sys_handler.h"
 
 #define KEYBOARD_ENTRY 0x21
 #define RTC_ENTRY      0x28
 #define INTEL_EXCEPTION_NUM 20
 #define IDT_MAX_ENTRY  256
 #define SYSTEM_CALL_ENTRY 0x80
+
 
 
 /*
@@ -51,7 +54,10 @@ void initialize_idt(){
 			idt[i].present     = 0x0;			
 		}
 		
-		idt[SYSTEM_CALL_ENTRY].present = 0x1;
+		idt[SYSTEM_CALL_ENTRY].reserved3   = 0x1;  /* referenced from x86 ISA Manual */
+		idt[SYSTEM_CALL_ENTRY].dpl         = 0x3;  /* user priviledged mode */
+		idt[SYSTEM_CALL_ENTRY].present     = 0x1;		
+
 		
         SET_IDT_ENTRY(idt[0], exception_0); /* Sets the IDT entry for divide by zero error */ 
         SET_IDT_ENTRY(idt[1], exception_1); /* Sets the IDT entry for debug exception error */ 
@@ -73,7 +79,7 @@ void initialize_idt(){
         SET_IDT_ENTRY(idt[17], exception_17); /* Sets the IDT entry for alignment check */ 
         SET_IDT_ENTRY(idt[18], exception_18); /* Sets the IDT entry for machine check */ 
         SET_IDT_ENTRY(idt[19], exception_19); /* Sets the IDT entry for SIMD floating point exception*/ 	
-		SET_IDT_ENTRY(idt[SYSTEM_CALL_ENTRY], syscall_handler);
+		SET_IDT_ENTRY(idt[SYSTEM_CALL_ENTRY], sys_handler);
 		
 		lidt(idt_desc_ptr); /* load the idt into idt descriptor pointer */
 		
@@ -343,14 +349,64 @@ void exception_19 (){
 		
 }
 
-void syscall_handler(){
-		printf("System Call Invoked!");
+/* void syscall_handler(){
+	
+	asm volatile ("jmp SYS_HANDLER");
+	
+	
+		asm volatile (
+		
+		"pushl %%edx		\n \
+		 pushl %%ecx		\n \
+		 pushl %%ebx		\n \
+		 pushl %%eax	\n \
+		 call call_handler \n \
+		 popl %%eax		\n \
+		 popl %%ebx		\n \
+		 popl %%ecx		\n \
+		 popl %%edx		\n \
+		 "
+		:
+		:
+		: "memory");
+		printf("System Call Invoked!\n");
+		asm volatile (
+		"iret");
 		while(1);
+		
+		
+		
 	
+} */
+
+/* int32_t call_handler(int32_t call_number, int32_t fd,  void* buf, int32_t nbytes) {
 	
+	//printf("HANDLER CALLED\n");
+	
+	switch(call_number) {
+		case 1:
+			//halt not implemented yet
+			break;
+		case 3:
+			read(fd, buf, nbytes);
+			break;
+		case 4:
+			write(fd, buf, nbytes);
+			break;
+		
+		case 5:
+			open(fd, buf);
+			break;
+		case 6:
+			close(fd);
+			break;
+		default:
+			return -1;
+	}
+	return 0;
 }
 
-
+ */
 
 
 

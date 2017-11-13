@@ -46,6 +46,14 @@ void video_desc_init(){
 	page_directory[0].user_supervisor_flag = 1;
 	// set up the base address for video page table, we only care about the first 20 bits
 	page_directory[0].base_address = ((uint32_t)video_page_table >> 12);
+	//TLB flush
+	asm volatile (
+		"movl %%cr3, %%eax		\n\
+		 movl %%eax, %%cr3"
+		 : 									\
+		 : 									\
+		 : "memory", "cc");		\
+
 
 	//page_directory[0] = (((uint32_t)video_page_table >> 12) | 0x07);
 }
@@ -61,6 +69,15 @@ void kernel_desc_init(){
 	page_directory[1].page_size_flag = 1;
 	// set up kernel page (4mb) and base address we only care about the first 20 bits of the memory
 	page_directory[1].base_address = (KERNEL_ADDRESS >> 12);
+
+	//TLB flush
+	asm volatile (
+		"movl %%cr3, %%eax		\n\
+		 movl %%eax, %%cr3"
+		 : 									\
+		 : 									\
+		 : "memory", "cc");		\
+
 
 	//page_directory[1] = ((KERNEL_ADDRESS >> 12) | 0x83);
 }
@@ -116,4 +133,26 @@ void paging_init() {
 		: \
 		: "g"(page_directory) \
 		: "eax", "cc", "memory"); \
+}
+
+/* user_page_add(uint32_t address, uint32_t process_num)
+ * initialize a user page
+ * input -- none
+ * output -- index for the free page descriptor
+ */
+void user_page_init(uint32_t process_num)
+{
+		page_directory[USER_PAGE].present_flag = 1;
+		page_directory[USER_PAGE].user_supervisor_flag = 1;
+		// set up the base address for video page table, we only care about the first 20 bits
+		page_directory[USER_PAGE].base_address = ( uint32_t)((eight_mb + four_mb*process_num) >> 12);
+
+		//TLB flush
+		asm volatile (
+ 			"movl %%cr3, %%eax		\n\
+ 		 	 movl %%eax, %%cr3"
+ 			 : 									\
+ 		   : 									\
+ 		   : "memory", "cc");		\
+
 }

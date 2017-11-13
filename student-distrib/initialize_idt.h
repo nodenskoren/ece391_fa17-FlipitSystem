@@ -1,9 +1,11 @@
 #include "lib.h"
 #include "i8259.h"   
 #include "RTC_driver.h"
+#include "sys_handler.h"
 
 /* Initialization function for IDT */
 extern void initialize_idt();
+
 
 /* Exception handlers for first 20 exceptions defined by Intel */
 void exception_0 ();
@@ -27,6 +29,7 @@ void exception_17 ();
 void exception_18 ();
 void exception_19 ();
 
-/* Handler for system call */
 void syscall_handler();
+
+
 

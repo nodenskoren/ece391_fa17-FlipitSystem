@@ -1,16 +1,23 @@
 boot.o: boot.S multiboot.h x86_desc.h types.h
+sys_handler.o: sys_handler.S
 x86_desc.o: x86_desc.S x86_desc.h types.h
 filesystem.o: filesystem.c lib.h types.h filesystem.h
 i8259.o: i8259.c i8259.h types.h lib.h
 initialize_idt.o: initialize_idt.c x86_desc.h types.h lib.h i8259.h \
-  initialize_idt.h RTC_driver.h
+  initialize_idt.h RTC_driver.h sys_handler.h systemcall.h
 kernel.o: kernel.c multiboot.h types.h x86_desc.h lib.h i8259.h debug.h \
-  tests.h initialize_idt.h RTC_driver.h keyboard_handler.h paging.h \
-  filesystem.h
+  tests.h initialize_idt.h RTC_driver.h sys_handler.h keyboard_handler.h \
+  paging.h filesystem.h systemcall.h
 keyboard_handler.o: keyboard_handler.c multiboot.h types.h x86_desc.h \
-  lib.h i8259.h debug.h tests.h keyboard_handler.h
+  lib.h i8259.h debug.h tests.h keyboard_handler.h terminal_driver.h
 lib.o: lib.c lib.h types.h
 paging.o: paging.c multiboot.h types.h x86_desc.h lib.h i8259.h debug.h \
   tests.h paging.h
 RTC_driver.o: RTC_driver.c x86_desc.h types.h lib.h RTC_driver.h i8259.h
-tests.o: tests.c tests.h x86_desc.h types.h lib.h
+systemcall.o: systemcall.c systemcall.h types.h filesystem.h paging.h \
+  terminal_driver.h lib.h RTC_driver.h i8259.h keyboard_handler.h \
+  x86_desc.h
+terminal_driver.o: terminal_driver.c terminal_driver.h lib.h types.h \
+  keyboard_handler.h
+tests.o: tests.c tests.h x86_desc.h types.h lib.h terminal_driver.h \
+  RTC_driver.h i8259.h

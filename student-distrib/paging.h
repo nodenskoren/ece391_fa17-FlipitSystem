@@ -4,6 +4,9 @@
 #define VIDEO_MEMORY_ADDRESS 0xB8000
 #define KERNEL_ADDRESS 0x400000
 #define EMPTY_ENTRY 0x00000002
+#define USER_PAGE 32
+#define four_mb	0x400000
+#define eight_mb 0x800000
 
 // bit string structure for page discriptor entry
 typedef struct page_directory_entry {
@@ -43,3 +46,5 @@ typedef struct page_table_entry {
 	 this initialization maps page discriptor table[0] into video memory(4kb) and [1] to kernel memory (4mb)
 */
 extern void paging_init();
+/* initialize a user page */
+extern void user_page_init(uint32_t process_num);

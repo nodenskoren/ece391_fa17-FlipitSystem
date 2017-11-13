@@ -31,8 +31,6 @@ static inline void assertion_failure(){
  * Coverage: Load IDT, IDT definition
  * Files: x86_desc.h/S
  */
-
-
 int idt_test(){
 	TEST_HEADER;
 
@@ -94,16 +92,14 @@ void echo(){
  * Coverage: open, read, write and close for RTC
  * Files: RTC_driver.h
  */
-
 void RTC_test(){
-
+    clear();
 	void* buf;
 	RTC_open((uint8_t*)"rtc");
 	uint32_t freq = 2;
 	RTC_write(0, &freq, 4);
 	RTC_read(0, buf, 0);
-	RTC_close(0);
-		
+	RTC_close(0);		
 }
 
 /* Checkpoint 3 tests */
@@ -113,7 +109,9 @@ extern void test_read_file();
 extern void test_regular_file();
 extern void test_directory_file();
 extern void test_read_dentry();
-
+extern void print_out_every_file();
+extern void test_read_file_non_text();
+extern void test_read_index();
 /* Test suite entry point */
 /* Test suite entry point */
 void launch_tests(){
@@ -121,12 +119,24 @@ void launch_tests(){
 	//printf("hello world");
 	// launch your tests here
 	//paging_test();
-	/*
-        echo();
-	test_read_file();
-	test_regular_file();
-	test_directory_file();
-	test_read_dentry();
-	*/
-	RTC_test();
+
+	//echo();
+	
+	//test_read_dentry();
+
+	/* Piazza demo 1 */
+	print_out_every_file();	
+	
+	/* Piazza demo 2 */
+	//test_read_file();
+
+	//test_read_file_non_text();
+	//test_regular_file();
+	//test_directory_file();
+	
+	/* Piazza demo 3 */
+	//RTC_test();
+	
+	/* Piazza demo 5 */
+	test_read_index();
 }

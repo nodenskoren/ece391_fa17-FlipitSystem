@@ -13,6 +13,7 @@
 #include "RTC_driver.h"
 #include "paging.h"
 #include "filesystem.h"
+#include "systemcall.h"
 
 #define RUN_TESTS
 
@@ -148,7 +149,6 @@ void entry(unsigned long magic, unsigned long addr) {
         tss.esp0 = 0x800000;
         ltr(KERNEL_TSS);
     }
-
     /* Init the PIC */
     i8259_init();
 	/*Init the keyboard*/
@@ -158,20 +158,24 @@ void entry(unsigned long magic, unsigned long addr) {
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
-	filesystem_init((unsigned int)((module_t*)mbi->mods_addr)->mod_start);
+    filesystem_init((unsigned int)((module_t*)mbi->mods_addr)->mod_start);
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
     printf("Enabling Interrupts\n");
+	clear();
     sti();
     /*init paging*/
     //paging_init();
+	
+	execute("shell");
+	
 
 #ifdef RUN_TESTS
     /* Run tests */
 
-    launch_tests();
+    //launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
 

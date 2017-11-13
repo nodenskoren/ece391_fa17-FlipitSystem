@@ -36,6 +36,15 @@
 #define DELETE_ASCII  0x08
 #define KEYBOARD_PORT 0x60
 
+#define LOWER_BOUNDS_SYMBOLS 0x01
+#define UPPER_BOUNDS_SYMBOLS 0x0D
+#define LEFT_BRACKET         0x1A
+#define RIGHT_BRACKET        0x1B
+#define LOWER_BOUND_SYMBOLS2 0x27
+#define UPPER_BOUND_SYMBOLS2 0x2B
+#define LOWER_BOUND_SYMBOLS3 0x33
+#define UPPER_BOUND_SYMBOLS3 0x35
+
 
 //uint8_t keyboard_mapping[2][57];  /*  Keyboard array that converts the scancode to ascii value */
 int caps_lock_flag = 0;
@@ -211,11 +220,10 @@ void keyboard_initialization(){
  */
 int is_letter(unsigned int c){
     //printf("Character: %c",c);
-    if(c>=0x01 && c<=0x0D) return 0;
-    if(c==0x1A || c==0x1B) return 0;
-    if(c>=0x27&& c<=0x2B)return 0;
-    if(c>=0x33 && c<=0x35)return 0;
-    //printf("MADE IT HERE!!!!!!!!!!!");
+    if(c>=LOWER_BOUNDS_SYMBOLS && c<=UPPER_BOUNDS_SYMBOLS) return 0;
+    if(c==LEFT_BRACKET || c==RIGHT_BRACKET) return 0;
+    if(c>=LOWER_BOUND_SYMBOLS2&& c<=UPPER_BOUND_SYMBOLS2)return 0;
+    if(c>=LOWER_BOUND_SYMBOLS3 && c<=UPPER_BOUND_SYMBOLS3)return 0;
     return 1;
 
 };

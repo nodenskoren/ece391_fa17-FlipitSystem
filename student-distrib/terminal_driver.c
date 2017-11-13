@@ -40,6 +40,7 @@ int32_t terminal_open(){
  *Side Effects: None
  */
 int32_t terminal_close(){
+    /*returns -1 because the terminal should never be closed during program execution*/
     return -1;
 }
 
