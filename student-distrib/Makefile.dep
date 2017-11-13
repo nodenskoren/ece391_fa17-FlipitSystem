@@ -1,7 +1,7 @@
 boot.o: boot.S multiboot.h x86_desc.h types.h
 sys_handler.o: sys_handler.S
 x86_desc.o: x86_desc.S x86_desc.h types.h
-filesystem.o: filesystem.c lib.h types.h filesystem.h
+filesystem.o: filesystem.c lib.h types.h filesystem.h systemcall.h
 i8259.o: i8259.c i8259.h types.h lib.h
 initialize_idt.o: initialize_idt.c x86_desc.h types.h lib.h i8259.h \
   initialize_idt.h RTC_driver.h sys_handler.h systemcall.h

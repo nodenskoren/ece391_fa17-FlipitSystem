@@ -46,12 +46,14 @@ int32_t terminal_close(){
 
 /*terminal_read
  *Description: Gives last input command to caller
- *Input: buf--pointer you want input coppied to
+ *Input: 
+         fd--the file descriptor entry of the file
+         buf--pointer you want input coppied to
          nbytes--number of bytes to copy into buf
  *Output: None
  *Side effect: coppies command buffer into input buffer
  */
-int32_t terminal_read(char *buf, int32_t nbytes){
+int32_t terminal_read(int32_t fd, char *buf, int32_t nbytes){
      if(nbytes<0) return -1;
      if(buf==NULL) return -1;
      
@@ -78,11 +80,12 @@ int32_t terminal_read(char *buf, int32_t nbytes){
 
 /*terminal_write
  *Description: Writes input buf to the screen
- *Input: buf--array of chars to be printed to string
+ *Input:fd--the file descriptor entry of the file
+ *      buf--array of chars to be printed to string
  *Output: nbytes--number of bytes to write to the string
  *Side effects: prints input buf to the screen
  */
-int32_t terminal_write(const char* buf, int32_t nbytes){
+int32_t terminal_write(int32_t fd, const char* buf, int32_t nbytes){
     int i = 0;
 
     /*error cases*/

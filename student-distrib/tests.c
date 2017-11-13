@@ -73,6 +73,7 @@ void paging_test(){
  *Side Effect: reads last command from terminal and writes it back to terminal
  */
 void echo(){
+	/*
    while(1){
      char buf[128];
      int bytes_recieved;
@@ -80,7 +81,7 @@ void echo(){
      terminal_write("echo: ",6);
      terminal_write(buf,bytes_recieved);
 
-  }
+  }*/
 }
 
 /* RTC_test
@@ -93,6 +94,7 @@ void echo(){
  * Files: RTC_driver.h
  */
 void RTC_test(){
+	
     clear();
 	void* buf;
 	RTC_open((uint8_t*)"rtc");
@@ -125,7 +127,7 @@ void launch_tests(){
 	//test_read_dentry();
 
 	/* Piazza demo 1 */
-	print_out_every_file();	
+	//print_out_every_file();	
 	
 	/* Piazza demo 2 */
 	//test_read_file();
@@ -138,5 +140,5 @@ void launch_tests(){
 	//RTC_test();
 	
 	/* Piazza demo 5 */
-	test_read_index();
+	//test_read_index();
 }

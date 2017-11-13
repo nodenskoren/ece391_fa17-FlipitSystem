@@ -169,7 +169,7 @@ void entry(unsigned long magic, unsigned long addr) {
     /*init paging*/
     //paging_init();
 	
-	execute("shell");
+	execute((uint8_t *)"shell");
 	
 
 #ifdef RUN_TESTS
