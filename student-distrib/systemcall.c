@@ -19,7 +19,11 @@
 #define eightmeg_page 0x800000
 #define eightkilo_page 0x2000
 #define entry_point_length 4
+#define executable_check_length
 #define bitmap_size 8
+#define pid_size 8
+#define entry_point_start 24
+
 
 static int ret_val =0;
 pcb_t* active_process;
@@ -85,12 +89,12 @@ int32_t execute(const uint8_t * command){
   }
 
   // allocate a filename buffer
-  uint8_t filename_buf [32];
+  uint8_t filename_buf [file_length];
   int i = 0;
 
   
   // loop through the command to get the file name
-  while(command[i] != ' ' && i < 32)
+  while(command[i] != ' ' && i < file_length)
   {
     filename_buf[i] = command[i];
     i++;
@@ -114,8 +118,8 @@ int32_t execute(const uint8_t * command){
   }
 
   // check if it is excecutable
-  uint8_t temp_read[4];
-  read_data(dentry.inode,0, temp_read, 4);
+  uint8_t temp_read[executable_check_length];
+  read_data(dentry.inode,0, temp_read, executable_check_length);
   
   // check if magic numbers for exe file is correct
   if(temp_read[0] != 0x7f || temp_read[1] != 0x45 || temp_read[2] != 0x4c || temp_read[3] != 0x46)
@@ -136,10 +140,10 @@ int32_t execute(const uint8_t * command){
   
   
   i = 0;
-  while(pid_array[i] == 1 && i<8 ){
+  while(pid_array[i] == 1 && i<pid_size ){
 	  i++;
   }
-  if (i<8)
+  if (i<pid_size)
 	pid_array[i] = 1;
   else 
   {
@@ -190,8 +194,8 @@ int32_t execute(const uint8_t * command){
  
   // gets the entry point from the file
   uint32_t entry_point = 0;
-  uint8_t buf[4];
-  read_data(dentry.inode, 24, buf, 4);
+  uint8_t buf[entry_point_length];
+  read_data(dentry.inode, entry_point_start, buf, 4);
   entry_point = (buf[3] << 24) | (buf[2] << 16) | (buf[1] << 8) | buf[0]; 
 
   // update tss before iret
