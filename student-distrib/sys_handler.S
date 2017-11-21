@@ -1,7 +1,6 @@
 
-.global sys_handler
+.global sys_handler, interrupt_handler, rtc_wrapper, keyboard_wrapper
 sys_handler:
-
 
 	pushfl
 	
@@ -18,30 +17,19 @@ sys_handler:
 	
 	call *jump(, %eax, 4)
 	
-
 	
 	popl %ebx	
 	popl %ecx		
 	popl %edx
 	
-	
 	popfl
-
-
-	
-	
-	
-	
-	
-	
-	
+			
 	iret
 	
 	
 num_invalid:
 	
 	popfl
-	popal
 	movl $-1, %eax
 	iret
 	
@@ -50,4 +38,28 @@ jump:
 .long halt, execute, read, write, open, close	
 
 
+
+
+# saves all registers and flags before rtc_handler, restores all registers and flags after
+rtc_wrapper:
+	pushal   # push all registers
+	pushfl   # push all flags 
+	call RTC_interrupt_handler   
+	popfl    # pop all flags 
+	popal    # pop all registers
+	
+	iret
+
+
+# saves all registers and flags before terminal, restores all registers and flags after
+keyboard_wrapper:
+	cli
+	pushal   # push all registers
+	pushfl   # push all flags 
+	call keyboard_interrupt_handler
+	popfl    # pop all flags 
+	popal    # pop all registers
+	sti
+	
+	iret
 

@@ -1,5 +1,6 @@
 #include "lib.h"
 #include "i8259.h"
+#include "sys_handler.h"
 
 /* Opens the RTC file */
 extern int32_t RTC_open(const uint8_t* filename);

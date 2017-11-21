@@ -3,4 +3,6 @@
 
 // system call asm linkage
 extern void sys_handler(void);
+extern void rtc_wrapper(void);
+extern void keyboard_wrapper(void);
 #endif

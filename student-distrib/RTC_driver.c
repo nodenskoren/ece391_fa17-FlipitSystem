@@ -45,7 +45,7 @@ int32_t RTC_open(const uint8_t* filename){
 	idt[RTC_ENTRY].reserved0   = 0x0;
 	idt[RTC_ENTRY].dpl         = 0x0;  /* kernel priviledged mode */
 	idt[RTC_ENTRY].present     = 0x1;
-	SET_IDT_ENTRY(idt[RTC_ENTRY], RTC_interrupt_handler);
+	SET_IDT_ENTRY(idt[RTC_ENTRY], rtc_wrapper);
 	
 	/* Enable IRQ8  */
 	outb(REG_B, REG_NUM_PORT);		           // select register B, and disable NMI	
