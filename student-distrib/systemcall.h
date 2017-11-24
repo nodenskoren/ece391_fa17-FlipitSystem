@@ -57,3 +57,4 @@ extern int32_t close(int32_t fd);
 extern void stdin_init(int32_t fd);
 extern void stdout_init(int32_t fd); 
 extern int32_t execute(const uint8_t * command);
+extern int32_t vidmap(uint8_t** screen_start);

@@ -8,7 +8,7 @@
 
 page_directory_entry page_directory[PAGE_DIRECTORY_SIZE] __attribute__((aligned(4096)));
 page_table_entry video_page_table[PAGE_TABLE_SIZE] __attribute__((aligned(4096)));
-
+page_table_entry vidmap_page_table[PAGE_TABLE_SIZE] __attribute__((aligned(4096)));
 
 /* helper function to initialize video page table to not present
  * input -- none
@@ -110,7 +110,8 @@ void paging_init() {
 	video_table_init();
 	video_desc_init();
 	kernel_desc_init();
-
+	vidmap_page_initialization();
+	
 	//map video memory table frame onto video page table, we only care about the first 20 bits of the address
 	video_page_table[VIDEO_MEMORY].base_address = (VIDEO_MEMORY_ADDRESS >> 12);
 	video_page_table[VIDEO_MEMORY].present_flag = 1;
@@ -160,3 +161,26 @@ void user_page_init(uint32_t process_num)
  		   : "memory", "cc");		\
 
 }
+
+
+void vidmap_page_initialization() {
+	uint32_t pd_index = USER_VID_MAP >> PD_SIZE_DIGITS;
+	
+	// if(video_page_table[pt_index].present_flag == 0) {
+	vidmap_page_table[0].user_supervisor_flag = 1;
+	vidmap_page_table[0].base_address = (((uint32_t)(USER_VID_MAP) & FOUR_KB_MASK) >> FOUR_KB_BINARY_DIGITS);
+	vidmap_page_table[0].present_flag = 1;
+	vidmap_page_table[0].accessed_flag = 0;
+	// }
+
+	// if(page_directory[pd_index].present_flag == 0) {
+	page_directory[pd_index].user_supervisor_flag = 1;
+	page_directory[pd_index].base_address = (((uint32_t)(vidmap_page_table) & FOUR_KB_MASK) >> FOUR_KB_BINARY_DIGITS);
+	page_directory[pd_index].present_flag = 1;
+	page_directory[pd_index].accessed_flag = 0;		
+	page_directory[pd_index].page_size_flag = 0;
+	// }
+	asm volatile(
+		"invlpg (%0)"::"r" (USER_VID_MAP): "memory");	\
+}
+

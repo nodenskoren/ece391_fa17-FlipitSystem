@@ -23,10 +23,13 @@
 #define bitmap_size 8
 #define pid_size 8
 #define entry_point_start 24
-
+#define _128MB 0x08000000
+#define _4MB 0x00400000
+#define	USER_VID 0x07CB8000
 
 static int ret_val =0;
-pcb_t* active_process;
+pcb_t* active_process = NULL;
+pcb_t* previous_process = NULL;
 uint32_t pid_array[8];
 
 /* jump tables for different operations */
@@ -42,7 +45,7 @@ typedef int32_t (*open_t)(char*);
 /* type define the read functions */
 typedef int32_t (*read_t)(int32_t, void*, int32_t);
 
-/* type define the close functions */
+/* type define the write functions */
 typedef int32_t (*write_t)(int32_t, void*, int32_t);
 
 /* type define the close functions */
@@ -140,10 +143,10 @@ int32_t execute(const uint8_t * command){
   
   
   i = 0;
-  while(pid_array[i] == 1 && i<pid_size ){
+  while(pid_array[i] == 1 && i< pid_size){
 	  i++;
   }
-  if (i<pid_size)
+  if (i < pid_size)
 	pid_array[i] = 1;
   else 
   {
@@ -152,20 +155,32 @@ int32_t execute(const uint8_t * command){
   }
   // store pcb to 8MB - (pid+1) * 8kb
   pcb_t* current_pcb = (pcb_t*)(eightmeg_page - (i + 1) * eightkilo_page);
-  current_pcb->pid = i;
-  
- 
-
+  current_pcb->pid = i; 
   
   // open FDs, update the global process info
-  active_process = current_pcb;
+  // root case
+	if(active_process == NULL) {
+		//printf("1\n");
+		active_process = current_pcb;
+		active_process->parent_pcb == NULL;
+	}
+	
+	else{
+		//printf("2\n");
+		previous_process = active_process;
+		active_process = current_pcb;
+		active_process->parent_pcb = previous_process;
+	}
+	
+	//active_process = current_pcb;
+
   
   stdin_init(Stdin_FD);
   stdout_init(Stdout_FD);
  
   // setting up paging 
   user_page_init(current_pcb->pid);
- 
+  //printf("pid: %d\n", current_pcb->pid);
   
   // store esp and ebp into pcb
   uint32_t esp = 0;
@@ -178,13 +193,17 @@ int32_t execute(const uint8_t * command){
 	 : "memory"
   );
   
+  /* bug */
     // see if we need to store parent pcb pointer
-  if( active_process->parent_pcb != NULL){
-	  current_pcb->parent_pcb = (pcb_t*)(eightmeg_page - (active_process->pid) * eightkilo_page );
+  if(active_process->parent_pcb != NULL){
+	  //printf("output I\n");
+	  //current_pcb->parent_pcb = (pcb_t*)(eightmeg_page - (active_process->pid) * eightkilo_page );
 	  current_pcb->esp = esp;
 	  current_pcb->ebp = ebp;
   }
+  
   else{
+	  //printf("output II\n");
 	  current_pcb->parent_pcb = NULL;
   }
   
@@ -203,6 +222,7 @@ int32_t execute(const uint8_t * command){
   tss.ss0 = KERNEL_DS;
   current_pcb->esp0 = tss.esp0;
   current_pcb->ss0	= tss.ss0;
+  //active_process = current_pcb;
   
 asm volatile (
   	"pushl %%eax			\n \
@@ -382,15 +402,20 @@ int32_t halt (uint8_t status){
 	// restore parent paging
 	if(active_process->parent_pcb != NULL)
 	{	
+		//printf("Output 1\n");
 		user_page_init(active_process->parent_pcb->pid);
+		//printf("Output 3\n");
 		// change the tss esp0 to point to the bottom of 8kb kernel process, the kernel stack
 		tss.esp0 = active_process->parent_pcb->esp0;
-		tss.ss0 = active_process->parent_pcb->ss0;	
-		pid_array[active_process->pid] =0;	
+		//printf("Output 4\n");
+		tss.ss0 = active_process->parent_pcb->ss0;
+		//printf("Output 5\n");
+		pid_array[active_process->pid] =0;
+		//printf("Output 6\n");
 	}
 	else
 	{
-
+		printf("Output 2\n");
 		is_shell =1;
 		pid_array[0] = 0;
 	}
@@ -403,6 +428,7 @@ int32_t halt (uint8_t status){
 
 	if(is_shell == 1)
 	{
+		//printf("Output 7\n");
 		active_process = NULL;
 		printf("restarting the shell\n");
 		execute((uint8_t *)"shell");
@@ -410,8 +436,13 @@ int32_t halt (uint8_t status){
 	// jump to execute return
 	
 	uint32_t esp = active_process->esp;
+			//printf("Output 8\n");
+
 	uint32_t ebp = active_process->ebp;
+			//printf("Output 9\n");
+
 	active_process = active_process->parent_pcb;
+		//printf("Output 10\n");
 	
 	
 	asm volatile(
@@ -429,5 +460,14 @@ int32_t halt (uint8_t status){
 	
 	return 0;
 
+}
+
+int32_t vidmap(uint8_t** screen_start) {
+	if((uint32_t)screen_start < _128MB || (uint32_t)screen_start >= (_128MB + _4MB)) {
+		return -1;
+	}
+	
+	*screen_start = (uint8_t*)USER_VID_MAP;
+	return 0;
 }
 

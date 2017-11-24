@@ -7,6 +7,10 @@
 #define USER_PAGE 32
 #define four_mb	0x400000
 #define eight_mb 0x800000
+#define USER_VID_MAP 0xFFC00000
+#define FOUR_KB_MASK 0xFFFFF000
+#define FOUR_KB_BINARY_DIGITS 12
+#define PD_SIZE_DIGITS 22
 
 // bit string structure for page discriptor entry
 typedef struct page_directory_entry {
@@ -48,3 +52,4 @@ typedef struct page_table_entry {
 extern void paging_init();
 /* initialize a user page */
 extern void user_page_init(uint32_t process_num);
+extern void vidmap_page_initialization();
