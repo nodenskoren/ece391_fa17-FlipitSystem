@@ -415,7 +415,7 @@ int32_t halt (uint8_t status){
 	}
 	else
 	{
-		printf("Output 2\n");
+		//printf("Output 2\n");
 		is_shell =1;
 		pid_array[0] = 0;
 	}
