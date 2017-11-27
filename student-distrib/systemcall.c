@@ -335,7 +335,7 @@ int32_t open(const uint8_t* filename) {
 				fds[fd].active = ACTIVE;
 				//fds[fd].fname = filename;
 				RTC_open(filename);
-				return SUCCESS;
+				return fd;
 			/* Directory */
 			case DIRECTORY_FILE: 
 				fds[fd].f_op = dir_jmp_table;
@@ -344,7 +344,7 @@ int32_t open(const uint8_t* filename) {
 				fds[fd].active = ACTIVE;
 				//fds[fd].fname = filename;
 				directory_file_open();
-				return SUCCESS;
+				return fd;
 			/* Regular file */
 			case REGULAR_FILE:
 				fds[fd].f_op = file_jmp_table;
@@ -353,7 +353,7 @@ int32_t open(const uint8_t* filename) {
 				fds[fd].active = ACTIVE;
 				//fds[fd].fname = filename;
 				regular_file_open(filename);
-				return SUCCESS;
+				return fd;
 
 			default: // Invalid type
 				return FAILURE;
