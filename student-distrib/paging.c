@@ -111,12 +111,26 @@ void paging_init() {
 	video_desc_init();
 	kernel_desc_init();
 	vidmap_page_initialization();
+	vidmap_desc_init();
 	
 	//map video memory table frame onto video page table, we only care about the first 20 bits of the address
 	video_page_table[VIDEO_MEMORY].base_address = (VIDEO_MEMORY_ADDRESS >> 12);
 	video_page_table[VIDEO_MEMORY].present_flag = 1;
 	video_page_table[VIDEO_MEMORY].user_supervisor_flag = 1;
-
+	
+	//map video memory table frame onto video page table, we only care about the first 20 bits of the address
+	vidmap_page_table[0].base_address = (USER_VID_MAP >> 12);
+	vidmap_page_table[0].present_flag = 1;
+	vidmap_page_table[0].user_supervisor_flag = 1;	
+	
+	/*
+	printf("%x\n", USER_VID_MAP);
+	printf("%x\n", USER_VID_MAP >> 12);
+	printf("%x\n", vidmap_page_table[0].base_address);
+	printf("%x\n", &vidmap_page_table);
+	printf("%x\n", page_directory[1023].base_address);
+	*/
+	
 	//video_page_table[VIDEO_MEMORY] = ((VIDEO_MEMORY_ADDRESS >> 12) | 0x07);
 
 	// using asm to push the values into correct registers
@@ -164,23 +178,59 @@ void user_page_init(uint32_t process_num)
 
 
 void vidmap_page_initialization() {
-	uint32_t pd_index = USER_VID_MAP >> PD_SIZE_DIGITS;
 	
-	// if(video_page_table[pt_index].present_flag == 0) {
-	vidmap_page_table[0].user_supervisor_flag = 1;
-	vidmap_page_table[0].base_address = (((uint32_t)(USER_VID_MAP) & FOUR_KB_MASK) >> FOUR_KB_BINARY_DIGITS);
-	vidmap_page_table[0].present_flag = 1;
-	vidmap_page_table[0].accessed_flag = 0;
-	// }
+		int i;
+	// loop through the page table and set all the page entry to read write enabled
+	for (i = 0; i < PAGE_TABLE_SIZE; i++){
 
-	// if(page_directory[pd_index].present_flag == 0) {
-	page_directory[pd_index].user_supervisor_flag = 1;
-	page_directory[pd_index].base_address = (((uint32_t)(vidmap_page_table) & FOUR_KB_MASK) >> FOUR_KB_BINARY_DIGITS);
-	page_directory[pd_index].present_flag = 1;
-	page_directory[pd_index].accessed_flag = 0;		
-	page_directory[pd_index].page_size_flag = 0;
-	// }
-	asm volatile(
-		"invlpg (%0)"::"r" (USER_VID_MAP): "memory");	\
+		vidmap_page_table[i].present_flag = 0;
+		vidmap_page_table[i].read_write_flag = 1;
+		vidmap_page_table[i].user_supervisor_flag = 0;
+		vidmap_page_table[i].pwt_flag = 0;
+		vidmap_page_table[i].pcd_flag = 0;
+		vidmap_page_table[i].accessed_flag = 0;
+		vidmap_page_table[i].dirty_flag = 0;
+		vidmap_page_table[i].page_size_flag = 0;
+		vidmap_page_table[i].available_flag = 0;
+		vidmap_page_table[i].global_page_flag = 0;
+		vidmap_page_table[i].base_address = 0;
+		//video_page_table[i] = EMPTY_ENTRY;
+	}
+	//vidmap_page_table[0].base_address = (((uint32_t)(USER_VID_MAP) & FOUR_KB_MASK) >> FOUR_KB_BINARY_DIGITS);
 }
 
+/* vidmap_desc_init()
+ * helper function to initialize vidmap descriptor table to be present and accessable by all
+ * input -- none
+ * output -- none
+ */
+void vidmap_desc_init(){
+	
+	/*
+			page_directory[USER_PAGE].present_flag = 1;
+		page_directory[USER_PAGE].user_supervisor_flag = 1;
+		page_directory[USER_PAGE].accessed_flag = 1;
+		page_directory[USER_PAGE].page_size_flag = 1;
+		// set up the base address for video page table, we only care about the first 20 bits
+		page_directory[USER_PAGE].base_address = ( uint32_t)((eight_mb + four_mb*process_num) >> 12);
+	
+	
+	*/
+	uint32_t pd_index = USER_VID_MAP >> PD_SIZE_DIGITS;
+	page_directory[pd_index].present_flag = 1;
+	page_directory[pd_index].accessed_flag = 1;
+	page_directory[pd_index].page_size_flag = 0;	
+	page_directory[pd_index].user_supervisor_flag = 1;
+	// set up the base address for video page table, we only care about the first 20 bits
+	page_directory[pd_index].base_address = ((uint32_t)vidmap_page_table >> 12);
+	//TLB flush
+	asm volatile (
+		"movl %%cr3, %%eax		\n\
+		 movl %%eax, %%cr3"
+		 : 									\
+		 : 									\
+		 : "memory", "cc");		\
+
+
+	//page_directory[0] = (((uint32_t)video_page_table >> 12) | 0x07);
+}

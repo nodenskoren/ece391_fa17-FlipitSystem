@@ -144,8 +144,8 @@ int32_t execute(const uint8_t * command){
 		j++;
 	}
 	arg_buff[j] = '\0';
+
 	
-  
   // try to read
   dentry_t dentry;
   if ( read_dentry_by_name (filename_buf, &(dentry)) == -1 )
@@ -191,11 +191,11 @@ int32_t execute(const uint8_t * command){
   pcb_t* current_pcb = (pcb_t*)(eightmeg_page - (i + 1) * eightkilo_page);
   current_pcb->pid = i; 
   int l=0;
-  for(l =0; l<cmd_length; l++){
+ while(arg_buff[l] != '\0'){
 	current_pcb->arg[l] = arg_buff[l];
-	
+	l++;
   }
-  
+  current_pcb->arg[l] = '\0';
   //printf("%c\n", current_pcb->arg[0]);
   //printf("%c\n", current_pcb->arg[1]);
   //printf("%c\n", current_pcb->arg[2]);
@@ -387,6 +387,7 @@ int32_t open(const uint8_t* filename) {
 	}
 	//printf("FILE_OPEN!_2");
 
+	
 	/* If file descriptor table is fully loaded already, return failure */
 	if(fd <= 7 && read_dentry_by_name(filename, &d_entry) >= 0) {
 		//printf("FILE_OPEN!_3");
@@ -469,12 +470,12 @@ int32_t halt (uint8_t status){
 	ret_val = status;
 	int is_shell = 0;
 	//uint32_t retval = (uint32_t)status;
-	uint32_t fd = 0;
+	uint32_t fd = 2;
 	// close any relevant FDs
 	
-	while(active_process->file_descriptor_table[fd].active == ACTIVE && fd < 2) {
-		active_process->file_descriptor_table[fd].active = INACTIVE;		
-		fd++;
+	while(active_process->file_descriptor_table[fd].active == ACTIVE) {
+		 close(fd);
+		 fd++;
 	}
 	
 	
@@ -492,6 +493,11 @@ int32_t halt (uint8_t status){
 		//printf("Output 5\n");
 		pid_array[active_process->pid] =0;
 		//printf("Output 6\n");
+		int i = 0;
+		for(i=0; i< cmd_length; i++)
+		{
+			active_process->parent_pcb->arg[i] = '\0';
+		}
 	}
 	else
 	{
@@ -554,15 +560,15 @@ int32_t vidmap(uint8_t** screen_start) {
 
 int32_t getargs (uint8_t* buf, int32_t nbytes)
 {
-	printf("it's called\n");
+		//printf("it's called\n");
 		if (buf == NULL)
 			return -1;
 		pcb_t* curr_process = active_process;
 		int32_t pcb_arg_length = strlen((int8_t*)curr_process->arg);
-		printf("arglength%d\n", pcb_arg_length);
 		if( pcb_arg_length<= nbytes)
-			memcpy(buf, curr_process->arg, pcb_arg_length);
+			memcpy(buf, curr_process->arg, pcb_arg_length+1);
 		else
 			memcpy(buf, curr_process->arg, nbytes);
+
 		return 0;
 }
