@@ -103,14 +103,14 @@ void RTC_interrupt_handler(){
  */
 
 int32_t RTC_read(int32_t fd, void* buf, int32_t nbytes){
-	printf("THIS IS THE START\n");
+	printf("");
 	//cli();
 	RTC_flag = 1;  // sets the flag to be cleared by another RTC inpterrupt
 	//sti();
  	while(RTC_flag){
 		//printf("%d", RTC_flag);
 	}
-	printf("REACHED THE END OF READ");
+	printf("");
 	return SUCCESS;
 }
 

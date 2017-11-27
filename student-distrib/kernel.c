@@ -154,7 +154,7 @@ void entry(unsigned long magic, unsigned long addr) {
 	/*Init the keyboard*/
     keyboard_initialization();
 	/*init the RTC_driver*/
-	//initialize_RTC_driver();
+	//RTC_open("yeah");
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
@@ -182,3 +182,4 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Spin (nicely, so we don't chew up cycles) */
     asm volatile (".1: hlt; jmp .1;");
 }
+

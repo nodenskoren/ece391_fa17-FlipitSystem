@@ -50,11 +50,12 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
 	if(fname == NULL || dentry == NULL) {
 		return FAILURE;
 	}
+	
 
 	fname_length = strlen((char*)fname); // get the fname length
 	
 	/* If length is greater than 32 file name is not valid, return fail */
-	if(fname_length > FILENAME_MAX) {
+	if(fname_length > FILENAME_MAX || fname_length == 0) {
 		return FAILURE;
 	}
 	
@@ -620,3 +621,4 @@ void print_out_every_file() {
 		printf("\n");
 	}
 }
+

@@ -35,7 +35,7 @@ num_invalid:
 	
 		
 jump:
-.long halt, execute, read, write, open, close	
+.long halt, execute, read, write, open, close, getargs, vidmap
 
 
 
