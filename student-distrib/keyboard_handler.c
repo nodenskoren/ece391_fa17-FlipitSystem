@@ -18,6 +18,9 @@
 #define CTRL_RELEASED         0x9D
 #define ENTER_PRESSED         0x1C
 #define CARRIAGE_RETURN       0x0A
+#define  LEFT_ALT             0x38
+#define  RIGHT_ALT            0xB8
+
 
 #define TAB_OPCODE            0x0F
 
@@ -82,6 +85,9 @@ cli_and_save(flags);
           /*do nothing for escape just capture value*/
 	}
 	
+	else if(c == LEFT_ALT || c == RIGHT_ALT) {
+		/* do nothing */
+	}
 
 	else if( c == CAPS_LOCK_PRESSED){
 	  if( caps_lock_flag == 1)
@@ -255,6 +261,7 @@ unsigned char keyboard_mapping_capital[MAPPING_SIZE] = {
 	0x3E,0x3F,0x00,0x2A,0x00,0x20,0x00
 
 };
+
 
 
 

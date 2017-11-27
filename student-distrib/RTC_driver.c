@@ -75,18 +75,14 @@ int32_t RTC_open(const uint8_t* filename){
  */
 
 void RTC_interrupt_handler(){
-	
-	//printf("1");
-	// test_interrupts(); //test cases for RTC interrupt
-	
+	uint32_t flags;	
 	/* Enable another RTC interrupt */
 
 	outb(REG_C, REG_NUM_PORT);            // select register C
-	cli();                                // make sure the loading is protected
+	cli_and_save(flags);                                // make sure the loading is protected
 	inb(IO_PORT);                         // just throw away contents
-	//sti();
 	RTC_flag = 0;
-	sti();        
+	restore_flags(flags);        
 	
 	send_eoi(IRQ_RTC_NUM);                // send EOI
 
@@ -104,15 +100,14 @@ void RTC_interrupt_handler(){
  */
 
 int32_t RTC_read(int32_t fd, void* buf, int32_t nbytes){
-	printf("");
-	//cli();
+	uint32_t flags;
+	cli_and_save(flags);    
 	RTC_flag = 1;  // sets the flag to be cleared by another RTC inpterrupt
-	//sti();
+	restore_flags(flags);  
  	while(RTC_flag){
 		//printf("%d", RTC_flag);
 	}
-	//printf("");
-	return SUCCESS;
+
 }
 
 /*

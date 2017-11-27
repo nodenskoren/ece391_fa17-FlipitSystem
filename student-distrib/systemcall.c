@@ -78,32 +78,74 @@ int32_t execute(const uint8_t * command){
 /*   The following is checking the file validity   */ 
 /***************************************************/
 
-  //printf("%s\n", command);
 
+
+ 
   // check if command is null
   if(command == NULL)
   return -1;
-
   // check if filename makes sense
-  if(command[0] == '\0' || command[0] == ' ' || command[0] == '\t')
+  if(command[0] == '\0' || command[0] == '\n' || command[0] == '\t'|| command[0] == '\r')
   {
     puts("Exception: illegal file name!\n");
     return -1;
   }
 
   // allocate a filename buffer
-  uint8_t filename_buf [file_length];
+  uint8_t filename_buf [file_length+1];
+	uint8_t arg_buff [cmd_length];
   int i = 0;
+	int j = 0;
+	// strip off the leading spaces
+	while(command[i] == ' ')
+	{
+		i++;
+	}
+	
+	// check again if our command is valid
+	if(command[i] == '\0' || command[i] == '\n' || command[i] == '\t'|| command[i] == '\r')
+	{
+		puts("Exception: illegal file name!\n");
+		return -1;
+	}
 
-  
   // loop through the command to get the file name
-  while(command[i] != ' ' && i < file_length)
+  while(command[i] != '\0' && command[i] != '\n' && command[i] != '\t'&& command[i] != '\r' && command[i] != ' ' )
   {
-    filename_buf[i] = command[i];
+	  //printf("%c\n", command[i]);
+    filename_buf[j] = command[i];
     i++;
+		j++;
+		
   }
+  //printf("%c\n", command[i]);
+  // if our filename doesnt end with space, the file name is illegal
+  if(j> file_length)
+  {
+    puts("Exception: illegal file name!\n");
+    return -1;
+  }
+	// otherwise we just add a end of string at the end of our filename
+	else
+		filename_buf[j] = '\0';
+	
+	// strip off the leading spaces
+	while(command[i] == ' ')
+	{
+		i++;
+	}
 
-   
+	// get arguments into our pcb
+	j=0;
+	while(command[i] != '\0' && command[i] != '\n' && command[i] != '\t'&& command[i] != '\r' && i<cmd_length)
+	{
+		arg_buff[j] = command[i];
+		i++;
+		j++;
+	}
+	arg_buff[j] = '\0';
+	
+  
   // try to read
   dentry_t dentry;
   if ( read_dentry_by_name (filename_buf, &(dentry)) == -1 )
@@ -129,6 +171,10 @@ int32_t execute(const uint8_t * command){
 
  
   // loop over the pid array to find the empty entry
+
+  //printf("esp = %x\n", esp);
+  //printf("ebp = %x\n", ebp);
+  
   
   i = 0;
   while(pid_array[i] == 1 && i< pid_size){
@@ -144,8 +190,19 @@ int32_t execute(const uint8_t * command){
   // store pcb to 8MB - (pid+1) * 8kb
   pcb_t* current_pcb = (pcb_t*)(eightmeg_page - (i + 1) * eightkilo_page);
   current_pcb->pid = i; 
+  int l=0;
+  for(l =0; l<cmd_length; l++){
+	current_pcb->arg[l] = arg_buff[l];
+	
+  }
   
-  // open FDs, update the global process info
+  //printf("%c\n", current_pcb->arg[0]);
+  //printf("%c\n", current_pcb->arg[1]);
+  //printf("%c\n", current_pcb->arg[2]);
+  //printf("%c\n", current_pcb->arg[3]);
+
+
+	// open FDs, update the global process info
   // root case
 	if(active_process == NULL) {
 		//printf("1\n");
@@ -231,6 +288,7 @@ asm volatile (
 	return ret_val;
   
 }
+
 
 /* 
  * read
@@ -484,6 +542,7 @@ int32_t halt (uint8_t status){
 
 }
 
+
 int32_t vidmap(uint8_t** screen_start) {
 	if((uint32_t)screen_start < _128MB || (uint32_t)screen_start >= (_128MB + _4MB)) {
 		return -1;
@@ -495,7 +554,7 @@ int32_t vidmap(uint8_t** screen_start) {
 
 int32_t getargs (uint8_t* buf, int32_t nbytes)
 {
-/* 	printf("it's called\n");
+	printf("it's called\n");
 		if (buf == NULL)
 			return -1;
 		pcb_t* curr_process = active_process;
@@ -504,6 +563,6 @@ int32_t getargs (uint8_t* buf, int32_t nbytes)
 		if( pcb_arg_length<= nbytes)
 			memcpy(buf, curr_process->arg, pcb_arg_length);
 		else
-			memcpy(buf, curr_process->arg, nbytes); */
+			memcpy(buf, curr_process->arg, nbytes);
 		return 0;
 }

@@ -45,6 +45,7 @@ typedef struct pcb_t{
 	struct pcb_t *parent_pcb;
 	uint32_t esp0;
 	uint32_t ss0;
+	uint8_t arg[128];
 		
 } pcb_t;
 
@@ -58,3 +59,4 @@ extern void stdin_init(int32_t fd);
 extern void stdout_init(int32_t fd); 
 extern int32_t execute(const uint8_t * command);
 extern int32_t vidmap(uint8_t** screen_start);
+extern int32_t getargs (uint8_t* buf, int32_t nbytes);
