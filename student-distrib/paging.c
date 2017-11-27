@@ -119,9 +119,10 @@ void paging_init() {
 	video_page_table[VIDEO_MEMORY].user_supervisor_flag = 1;
 	
 	//map video memory table frame onto video page table, we only care about the first 20 bits of the address
-	vidmap_page_table[0].base_address = (USER_VID_MAP >> 12);
-	vidmap_page_table[0].present_flag = 1;
-	vidmap_page_table[0].user_supervisor_flag = 1;	
+	uint32_t pt_index = (USER_VID_MAP & 0x003FF000) >> 12;
+	vidmap_page_table[pt_index].base_address = (VIDEO_MEMORY_ADDRESS >> 12);
+	vidmap_page_table[pt_index].present_flag = 1;
+	vidmap_page_table[pt_index].user_supervisor_flag = 1;	
 	
 	/*
 	printf("%x\n", USER_VID_MAP);
