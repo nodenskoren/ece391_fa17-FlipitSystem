@@ -6,7 +6,7 @@ sys_handler:
 	
 	cmpl $1, %eax
 	jb 	 num_invalid
-	cmpl $6, %eax
+	cmpl $8, %eax
 	ja	 num_invalid
 	
 	addl $-1, %eax
@@ -35,7 +35,7 @@ num_invalid:
 	
 		
 jump:
-.long halt, execute, read, write, open, close	
+.long halt, execute, read, write, open, close, getargs, vidmap
 
 
 

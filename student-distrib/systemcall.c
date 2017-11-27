@@ -102,16 +102,8 @@ int32_t execute(const uint8_t * command){
     filename_buf[i] = command[i];
     i++;
   }
-  // if our filename doesnt end with space, the file name is illegal
- /* if(command[i] != ' ')
-  {
-    puts("Exception: illegal file name!\n");
-    return -1;
-  }
-*/
-  //printf("%s\n", command);
-  
-  
+
+   
   // try to read
   dentry_t dentry;
   if ( read_dentry_by_name (filename_buf, &(dentry)) == -1 )
@@ -137,10 +129,6 @@ int32_t execute(const uint8_t * command){
 
  
   // loop over the pid array to find the empty entry
-
-  //printf("esp = %x\n", esp);
-  //printf("ebp = %x\n", ebp);
-  
   
   i = 0;
   while(pid_array[i] == 1 && i< pid_size){
@@ -255,20 +243,32 @@ asm volatile (
  *
  */
 int32_t read(int32_t fd, void* buf, int32_t nbytes) {
-	/* If the entry has not been opened, invalidate the call */
-	if(active_process->file_descriptor_table[fd].active != ACTIVE) {
-		return FAILURE;
-	}
+	
 	/* If the fd given is not within the range, the buffer doesn't exist, or the bytes is not in a valid range */
 	/* return FAILURE */
 	if(fd < 0 || fd > 7 || buf == NULL || nbytes < 0) {
 		return FAILURE;
 	}
+	/* If the entry has not been opened, invalidate the call */
+	if(active_process->file_descriptor_table[fd].active != ACTIVE) {
+		return FAILURE;
+	}
+	
+	/* stdout in read is illegal */
+	if(fd == 1)
+		return FAILURE;
+	
 	/* Apply the specific read for the given file type */
 	int32_t* jmp_table = active_process->file_descriptor_table[fd].f_op;
 	read_t read_func = (read_t)jmp_table[READ];
 	int32_t bytes_read = read_func(fd, buf, nbytes);
-	active_process->file_descriptor_table[fd].f_offset += bytes_read;
+	
+	if (jmp_table == dir_jmp_table) {
+		active_process->file_descriptor_table[fd].f_offset += 1;
+	}
+	else {
+		active_process->file_descriptor_table[fd].f_offset += bytes_read;
+	}
 	return bytes_read;
 }
 
@@ -283,15 +283,22 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes) {
  *
  */
 int32_t write(int32_t fd, void* buf, int32_t nbytes) {
-	/* If the entry has not been opened, invalidate the call */
-	if(active_process->file_descriptor_table[fd].active != ACTIVE) {
-		return FAILURE;
-	}
+
 	/* If the fd given is not within the range, the buffer doesn't exist, or the bytes is not in a valid range */
 	/* return FAILURE */
 	if(fd < 0 || fd > 7 || buf == NULL || nbytes < 0) {
 		return FAILURE;
 	}
+	
+	/* If the entry has not been opened, invalidate the call */
+	if(active_process->file_descriptor_table[fd].active != ACTIVE) {
+		return FAILURE;
+	}
+	
+	/* stdin in write is illegal */
+	if(fd == 0)
+		return FAILURE;
+	
 	
 	/* Apply the specific write for the given file type */
 	int32_t* jmp_table = active_process->file_descriptor_table[fd].f_op;	
@@ -335,7 +342,7 @@ int32_t open(const uint8_t* filename) {
 				fds[fd].active = ACTIVE;
 				//fds[fd].fname = filename;
 				RTC_open(filename);
-				return SUCCESS;
+				return fd;
 			/* Directory */
 			case DIRECTORY_FILE: 
 				fds[fd].f_op = dir_jmp_table;
@@ -344,7 +351,7 @@ int32_t open(const uint8_t* filename) {
 				fds[fd].active = ACTIVE;
 				//fds[fd].fname = filename;
 				directory_file_open();
-				return SUCCESS;
+				return fd;
 			/* Regular file */
 			case REGULAR_FILE:
 				fds[fd].f_op = file_jmp_table;
@@ -353,7 +360,7 @@ int32_t open(const uint8_t* filename) {
 				fds[fd].active = ACTIVE;
 				//fds[fd].fname = filename;
 				regular_file_open(filename);
-				return SUCCESS;
+				return fd;
 
 			default: // Invalid type
 				return FAILURE;
@@ -371,6 +378,21 @@ int32_t open(const uint8_t* filename) {
  *
  */
 int32_t close(int32_t fd) {
+	
+	/* If the fd given is not within the range, the buffer doesn't exist, or the bytes is not in a valid range */
+	/* return FAILURE */
+	if(fd < 0 || fd > 7) {
+		return FAILURE;
+	}
+	
+	if(fd == 0 || fd == 1)
+		return FAILURE;
+	
+	/* If the entry has not been opened, invalidate the call */
+	if(active_process->file_descriptor_table[fd].active == INACTIVE) {
+		return FAILURE;
+	}
+	
 	/* Turn off the active flag of the entry specified by fd */
 	active_process->file_descriptor_table[fd].active = INACTIVE;
 	return 0;
@@ -471,3 +493,17 @@ int32_t vidmap(uint8_t** screen_start) {
 	return 0;
 }
 
+int32_t getargs (uint8_t* buf, int32_t nbytes)
+{
+/* 	printf("it's called\n");
+		if (buf == NULL)
+			return -1;
+		pcb_t* curr_process = active_process;
+		int32_t pcb_arg_length = strlen((int8_t*)curr_process->arg);
+		printf("arglength%d\n", pcb_arg_length);
+		if( pcb_arg_length<= nbytes)
+			memcpy(buf, curr_process->arg, pcb_arg_length);
+		else
+			memcpy(buf, curr_process->arg, nbytes); */
+		return 0;
+}

@@ -150,7 +150,7 @@ void user_page_init(uint32_t process_num)
 		page_directory[USER_PAGE].page_size_flag = 1;
 		// set up the base address for video page table, we only care about the first 20 bits
 		page_directory[USER_PAGE].base_address = ( uint32_t)((eight_mb + four_mb*process_num) >> 12);
-		printf("add %d\n", page_directory[USER_PAGE].base_address);
+		//printf("add %d\n", page_directory[USER_PAGE].base_address);
 
 		//TLB flush
 		asm volatile (

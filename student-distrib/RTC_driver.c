@@ -76,7 +76,7 @@ int32_t RTC_open(const uint8_t* filename){
 
 void RTC_interrupt_handler(){
 	
-	printf("1");
+	//printf("1");
 	// test_interrupts(); //test cases for RTC interrupt
 	
 	/* Enable another RTC interrupt */
@@ -84,6 +84,7 @@ void RTC_interrupt_handler(){
 	outb(REG_C, REG_NUM_PORT);            // select register C
 	cli();                                // make sure the loading is protected
 	inb(IO_PORT);                         // just throw away contents
+	//sti();
 	RTC_flag = 0;
 	sti();        
 	
@@ -103,14 +104,14 @@ void RTC_interrupt_handler(){
  */
 
 int32_t RTC_read(int32_t fd, void* buf, int32_t nbytes){
-	printf("THIS IS THE START\n");
+	printf("");
 	//cli();
 	RTC_flag = 1;  // sets the flag to be cleared by another RTC inpterrupt
 	//sti();
  	while(RTC_flag){
 		//printf("%d", RTC_flag);
 	}
-	printf("REACHED THE END OF READ");
+	//printf("");
 	return SUCCESS;
 }
 
