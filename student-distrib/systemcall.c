@@ -13,7 +13,7 @@
 #define Stdin_FD 0
 #define Stdout_FD 1
 #define file_length 32
-#define cmd_length  32
+#define cmd_length  128
 #define file_offset 0x00048000
 #define file_start 0x08048000
 #define eightmeg_page 0x800000
