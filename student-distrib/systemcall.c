@@ -377,7 +377,7 @@ int32_t open(const uint8_t* filename) {
 
 	
 	/* If file descriptor table is fully loaded already, return failure */
-	if(fd <= 7 && read_dentry_by_name(filename, &d_entry) >= 0) {
+	if(fd <= FD_MAX && read_dentry_by_name(filename, &d_entry) >= NOT_END_OF_FILE_OR_FAILURE) {
 		//printf("FILE_OPEN!_3");
 		/* Set the activate flag of the fd entry and specify the corresponding operation sets */
 		switch(d_entry.file_type) {
