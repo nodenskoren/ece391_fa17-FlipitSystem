@@ -26,6 +26,7 @@
 #define _128MB 0x08000000
 #define _4MB 0x00400000
 #define	USER_VID 0x07CB8000
+#define four_bytes 4
 
 static int ret_val =0;
 pcb_t* active_process = NULL;
@@ -255,11 +256,11 @@ int32_t execute(const uint8_t * command){
   // gets the entry point from the file
   uint32_t entry_point = 0;
   uint8_t buf[entry_point_length];
-  read_data(dentry.inode, entry_point_start, buf, 4);
+  read_data(dentry.inode, entry_point_start, buf, four_bytes);
   entry_point = (buf[3] << FOURTH_WORD) | (buf[2] << THIRD_WORD) | (buf[1] << SECOND_WORD) | buf[0]; 
 
   // update tss before iret
-  tss.esp0 = (eightmeg_page - i * eightkilo_page - 4);
+  tss.esp0 = (eightmeg_page - i * eightkilo_page - four_bytes);
   tss.ss0 = KERNEL_DS;
   current_pcb->esp0 = tss.esp0;
   current_pcb->ss0	= tss.ss0;
