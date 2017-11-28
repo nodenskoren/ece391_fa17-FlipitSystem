@@ -2,10 +2,6 @@
 #define FAILURE -1
 #define ACTIVE 1
 #define INACTIVE 0
-#define SUCCESS 0
-#define FAILURE -1
-#define ACTIVE 1
-#define INACTIVE 0
 #define USER_ESP (0x08400000 - 4)
 #define EIGHT_MEGABYTES 0x800000
 #define EIGHT_KILOBYTES 0x2000
@@ -25,6 +21,15 @@
 #define RTC_FILE 0
 #define DIRECTORY_FILE 1
 #define REGULAR_FILE 2
+#define SECOND_WORD 8
+#define THIRD_WORD 16
+#define FOURTH_WORD 24
+#define FD_MIN 0
+#define FD_MAX 7
+#define FD_STDIN 0
+#define FD_STDOUT 1
+#define PROCESS_MAX 8
+
 #include "types.h"
 
 // structure for our fd array
@@ -60,3 +65,5 @@ extern void stdout_init(int32_t fd);
 extern int32_t execute(const uint8_t * command);
 extern int32_t vidmap(uint8_t** screen_start);
 extern int32_t getargs (uint8_t* buf, int32_t nbytes);
+extern int32_t read_func(int32_t fd, void* buf, int32_t nbytes);
+extern int32_t write_func(int32_t fd, void* buf, int32_t nbytes);

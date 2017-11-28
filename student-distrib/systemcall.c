@@ -30,7 +30,7 @@
 static int ret_val =0;
 pcb_t* active_process = NULL;
 pcb_t* previous_process = NULL;
-uint32_t pid_array[8];
+uint32_t pid_array[PROCESS_MAX];
 
 /* jump tables for different operations */
 int32_t stdin_jmp_table[NUM_OF_OP] = {0, (int32_t)terminal_read, 0, 0};
@@ -196,20 +196,16 @@ int32_t execute(const uint8_t * command){
 	l++;
   }
   current_pcb->arg[l] = '\0';
-  //printf("%c\n", current_pcb->arg[0]);
-  //printf("%c\n", current_pcb->arg[1]);
-  //printf("%c\n", current_pcb->arg[2]);
-  //printf("%c\n", current_pcb->arg[3]);
-
 
 	// open FDs, update the global process info
   // root case
 	if(active_process == NULL) {
 		//printf("1\n");
 		active_process = current_pcb;
-		active_process->parent_pcb == NULL;
+		//active_process->parent_pcb == NULL;
 	}
 	
+	/* If not, set the parent before doing the process switch */
 	else{
 		//printf("2\n");
 		previous_process = active_process;
@@ -260,7 +256,7 @@ int32_t execute(const uint8_t * command){
   uint32_t entry_point = 0;
   uint8_t buf[entry_point_length];
   read_data(dentry.inode, entry_point_start, buf, 4);
-  entry_point = (buf[3] << 24) | (buf[2] << 16) | (buf[1] << 8) | buf[0]; 
+  entry_point = (buf[3] << FOURTH_WORD) | (buf[2] << THIRD_WORD) | (buf[1] << SECOND_WORD) | buf[0]; 
 
   // update tss before iret
   tss.esp0 = (eightmeg_page - i * eightkilo_page - 4);
@@ -301,10 +297,11 @@ asm volatile (
  *
  */
 int32_t read(int32_t fd, void* buf, int32_t nbytes) {
-	
+
+	/* Error checking start */	
 	/* If the fd given is not within the range, the buffer doesn't exist, or the bytes is not in a valid range */
 	/* return FAILURE */
-	if(fd < 0 || fd > 7 || buf == NULL || nbytes < 0) {
+	if(fd < FD_MIN || fd > FD_MAX || buf == NULL || nbytes < 0) {
 		return FAILURE;
 	}
 	/* If the entry has not been opened, invalidate the call */
@@ -313,21 +310,12 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes) {
 	}
 	
 	/* stdout in read is illegal */
-	if(fd == 1)
+	if(fd == FD_STDOUT)
 		return FAILURE;
+
+	/* Error checking ends */
 	
-	/* Apply the specific read for the given file type */
-	int32_t* jmp_table = active_process->file_descriptor_table[fd].f_op;
-	read_t read_func = (read_t)jmp_table[READ];
-	int32_t bytes_read = read_func(fd, buf, nbytes);
-	
-	if (jmp_table == dir_jmp_table) {
-		active_process->file_descriptor_table[fd].f_offset += 1;
-	}
-	else {
-		active_process->file_descriptor_table[fd].f_offset += bytes_read;
-	}
-	return bytes_read;
+	return read_func(fd, buf, nbytes);
 }
 
 /* 
@@ -342,9 +330,10 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes) {
  */
 int32_t write(int32_t fd, void* buf, int32_t nbytes) {
 
+	/* Error checking start */
 	/* If the fd given is not within the range, the buffer doesn't exist, or the bytes is not in a valid range */
 	/* return FAILURE */
-	if(fd < 0 || fd > 7 || buf == NULL || nbytes < 0) {
+	if(fd < FD_MIN || fd > FD_MAX || buf == NULL || nbytes < 0) {
 		return FAILURE;
 	}
 	
@@ -354,15 +343,13 @@ int32_t write(int32_t fd, void* buf, int32_t nbytes) {
 	}
 	
 	/* stdin in write is illegal */
-	if(fd == 0)
+	if(fd == FD_STDIN)
 		return FAILURE;
 	
+	/* Error checking ends */
 	
 	/* Apply the specific write for the given file type */
-	int32_t* jmp_table = active_process->file_descriptor_table[fd].f_op;	
-	write_t write_func = (write_t)jmp_table[WRITE];
-	write_func(fd, buf, nbytes);
-	return SUCCESS;
+	return write_func(fd, buf, nbytes);
 }
 
 /* 
@@ -382,7 +369,7 @@ int32_t open(const uint8_t* filename) {
 
 	/* Find an empty entry inside the file descriptor table */
 	uint32_t fd = 0;
-	while(fds[fd].active != 0) {
+	while(fds[fd].active != INACTIVE) {
 		fd++;
 	}
 	//printf("FILE_OPEN!_2");
@@ -440,11 +427,11 @@ int32_t close(int32_t fd) {
 	
 	/* If the fd given is not within the range, the buffer doesn't exist, or the bytes is not in a valid range */
 	/* return FAILURE */
-	if(fd < 0 || fd > 7) {
+	if(fd < FD_MIN || fd > FD_MAX) {
 		return FAILURE;
 	}
 	
-	if(fd == 0 || fd == 1)
+	if(fd == FD_STDIN || fd == FD_STDOUT)
 		return FAILURE;
 	
 	/* If the entry has not been opened, invalidate the call */
@@ -455,6 +442,36 @@ int32_t close(int32_t fd) {
 	/* Turn off the active flag of the entry specified by fd */
 	active_process->file_descriptor_table[fd].active = INACTIVE;
 	return 0;
+}
+
+/* 
+ * read_func
+ *		DESCRIPTION: Call the file-specific read function
+ *		INPUTS: fd (the desired index of the file descriptor table to write the buffer to)
+ *              buf (buffer containing the contents to write to file)
+ *              nbytes (how many bytes to write)
+ *		OUTPUTS: none
+ *		SIDE EFFECT: none
+ *
+ */
+int32_t read_func(int32_t fd, void* buf, int32_t nbytes) {
+	read_t read_function = (read_t)active_process->file_descriptor_table[fd].f_op[READ];
+	return read_function(fd, buf, nbytes);
+}
+
+/* 
+ * write_func
+ *		DESCRIPTION: Call the file-specific write function
+ *		INPUTS: fd (the desired index of the file descriptor table to write the buffer to)
+ *              buf (buffer containing the contents to write to file)
+ *              nbytes (how many bytes to write)
+ *		OUTPUTS: none
+ *		SIDE EFFECT: none
+ *
+ */
+int32_t write_func(int32_t fd, void* buf, int32_t nbytes) {
+	write_t write_function = (write_t)active_process->file_descriptor_table[fd].f_op[WRITE];
+	return write_function(fd, buf, nbytes);
 }
 
 /* 
@@ -483,16 +500,11 @@ int32_t halt (uint8_t status){
 	// restore parent paging
 	if(active_process->parent_pcb != NULL)
 	{	
-		//printf("Output 1\n");
 		user_page_init(active_process->parent_pcb->pid);
-		//printf("Output 3\n");
 		// change the tss esp0 to point to the bottom of 8kb kernel process, the kernel stack
 		tss.esp0 = active_process->parent_pcb->esp0;
-		//printf("Output 4\n");
 		tss.ss0 = active_process->parent_pcb->ss0;
-		//printf("Output 5\n");
 		pid_array[active_process->pid] =0;
-		//printf("Output 6\n");
 		int i = 0;
 		for(i=0; i< cmd_length; i++)
 		{
@@ -548,14 +560,24 @@ int32_t halt (uint8_t status){
 
 }
 
-
+/* 
+ * vidmap
+ *		DESCRIPTION: Assign a preset virtual address to the user program containing the data desired
+ *                   to be printed out, and map the data to the video memory's physical address (0xB8000)
+ *		INPUTS: screen_start - contains the virtual address of the data the screen should start printing
+ *		OUTPUTS: none
+ *		SIDE EFFECT: A page directory & page table set would be initialized and map to the video memory
+ *
+ */
 int32_t vidmap(uint8_t** screen_start) {
+	/* Boundary check */
 	if((uint32_t)screen_start < _128MB || (uint32_t)screen_start >= (_128MB + _4MB)) {
-		return -1;
+		return FAILURE;
 	}
 	
+	/* Set the screen_start address to the preset virtual address chosen by the designer */
 	*screen_start = (uint8_t*)USER_VID_MAP;
-	return 0;
+	return SUCCESS;
 }
 
 int32_t getargs (uint8_t* buf, int32_t nbytes)

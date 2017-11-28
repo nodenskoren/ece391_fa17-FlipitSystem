@@ -375,6 +375,7 @@ int32_t regular_file_read(int32_t fd, uint8_t* buf, uint32_t count) {
 	length_read = read_data(active_process->file_descriptor_table[fd].inode, active_process->file_descriptor_table[fd].f_offset, buf, count);
 	/* Add the progress read */
 	//file_offset += length_read;
+	active_process->file_descriptor_table[fd].f_offset += length_read;
 	return length_read;
 }
 
@@ -439,7 +440,7 @@ void test_regular_file() {
 int32_t regular_file_write(int32_t fd, const uint8_t* buf, uint32_t count) {
 	/* Print out error message and return */
 	printf("... Write function not implemented yet!\nNow returning...!\n");
-	return FAILURE;
+	return SUCCESS;
 }
 
 /* 
@@ -504,6 +505,7 @@ int32_t directory_file_read(int32_t fd, uint8_t* buf, uint32_t length) {
 	}
 	/* Copy the string to the buffer */
 	strncpy((int8_t*)buf, (int8_t*)&(dentry.file_name), length);
+	active_process->file_descriptor_table[fd].f_offset += 1;
 	//dentry_offset++;
 	return length;
 }
@@ -553,7 +555,7 @@ void test_directory_file() {
 int32_t directory_file_write(int32_t fd, const uint8_t* buf, uint32_t count) {
 	/* Print out error message and return */
 	printf("... Write function not implemented yet!\nNow returning...!\n");
-	return FAILURE;
+	return SUCCESS;
 }
 
 /* 

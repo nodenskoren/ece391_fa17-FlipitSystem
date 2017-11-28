@@ -11,6 +11,8 @@
 #define FOUR_KB_MASK 0xFFFFF000
 #define FOUR_KB_BINARY_DIGITS 12
 #define PD_SIZE_DIGITS 22
+#define PT_MASK 0x003FF000
+#define FOUR_KB 4096
 
 // bit string structure for page discriptor entry
 typedef struct page_directory_entry {

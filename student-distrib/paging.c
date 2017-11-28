@@ -6,13 +6,15 @@
 #include "tests.h"
 #include "paging.h"
 
-page_directory_entry page_directory[PAGE_DIRECTORY_SIZE] __attribute__((aligned(4096)));
-page_table_entry video_page_table[PAGE_TABLE_SIZE] __attribute__((aligned(4096)));
-page_table_entry vidmap_page_table[PAGE_TABLE_SIZE] __attribute__((aligned(4096)));
+page_directory_entry page_directory[PAGE_DIRECTORY_SIZE] __attribute__((aligned(FOUR_KB)));
+page_table_entry video_page_table[PAGE_TABLE_SIZE] __attribute__((aligned(FOUR_KB)));
+page_table_entry vidmap_page_table[PAGE_TABLE_SIZE] __attribute__((aligned(FOUR_KB)));
 
-/* helper function to initialize video page table to not present
- * input -- none
- * output -- none
+/* 
+ * video_table_init
+ *     helper function to initialize video page table to not present
+ *     input -- none
+ *     output -- none
  */
 void video_table_init(){
 	int i;
@@ -114,23 +116,17 @@ void paging_init() {
 	vidmap_desc_init();
 	
 	//map video memory table frame onto video page table, we only care about the first 20 bits of the address
-	video_page_table[VIDEO_MEMORY].base_address = (VIDEO_MEMORY_ADDRESS >> 12);
+	video_page_table[VIDEO_MEMORY].base_address = (VIDEO_MEMORY_ADDRESS >> FOUR_KB_BINARY_DIGITS);
 	video_page_table[VIDEO_MEMORY].present_flag = 1;
 	video_page_table[VIDEO_MEMORY].user_supervisor_flag = 1;
 	
 	//map video memory table frame onto video page table, we only care about the first 20 bits of the address
-	uint32_t pt_index = (USER_VID_MAP & 0x003FF000) >> 12;
-	vidmap_page_table[pt_index].base_address = (VIDEO_MEMORY_ADDRESS >> 12);
+	/* Calculate the offset of the virtual address in the 2nd level page table */
+	uint32_t pt_index = (USER_VID_MAP & PT_MASK) >> FOUR_KB_BINARY_DIGITS;
+	/* Set the base address of the page table to the video memory to create mapping */
+	vidmap_page_table[pt_index].base_address = (VIDEO_MEMORY_ADDRESS >> FOUR_KB_BINARY_DIGITS);
 	vidmap_page_table[pt_index].present_flag = 1;
-	vidmap_page_table[pt_index].user_supervisor_flag = 1;	
-	
-	/*
-	printf("%x\n", USER_VID_MAP);
-	printf("%x\n", USER_VID_MAP >> 12);
-	printf("%x\n", vidmap_page_table[0].base_address);
-	printf("%x\n", &vidmap_page_table);
-	printf("%x\n", page_directory[1023].base_address);
-	*/
+	vidmap_page_table[pt_index].user_supervisor_flag = 1;
 	
 	//video_page_table[VIDEO_MEMORY] = ((VIDEO_MEMORY_ADDRESS >> 12) | 0x07);
 
@@ -177,7 +173,13 @@ void user_page_init(uint32_t process_num)
 
 }
 
-
+/* 
+ * vidmap_page_initialization
+ *     helper function to initialize a new vidmap page table
+ *     input -- none
+ *     output -- none
+ *     side effect -- all entries in vidmap_page_table would be initialized to non-present
+ */
 void vidmap_page_initialization() {
 	
 		int i;
@@ -200,30 +202,25 @@ void vidmap_page_initialization() {
 	//vidmap_page_table[0].base_address = (((uint32_t)(USER_VID_MAP) & FOUR_KB_MASK) >> FOUR_KB_BINARY_DIGITS);
 }
 
-/* vidmap_desc_init()
- * helper function to initialize vidmap descriptor table to be present and accessable by all
- * input -- none
- * output -- none
+/* 
+ * vidmap_desc_init
+ *     helper function to initialize vidmap descriptor table to be present and accessable by all
+ *     input -- none
+ *     output -- none
+ *     side effect -- the page directory entry corresponding to the vidmap page would be marked as present, and the base address
+ *                    would be set to that of the vidmap_page_table which points to the video memory.
  */
 void vidmap_desc_init(){
-	
-	/*
-			page_directory[USER_PAGE].present_flag = 1;
-		page_directory[USER_PAGE].user_supervisor_flag = 1;
-		page_directory[USER_PAGE].accessed_flag = 1;
-		page_directory[USER_PAGE].page_size_flag = 1;
-		// set up the base address for video page table, we only care about the first 20 bits
-		page_directory[USER_PAGE].base_address = ( uint32_t)((eight_mb + four_mb*process_num) >> 12);
-	
-	
-	*/
+
+	/* Calculate the offset of the vidmap inside the page directory */
 	uint32_t pd_index = USER_VID_MAP >> PD_SIZE_DIGITS;
+	/* Mark the page as present and give the user level process privilage to access, also mark the page as 4KB page */
 	page_directory[pd_index].present_flag = 1;
 	page_directory[pd_index].accessed_flag = 1;
 	page_directory[pd_index].page_size_flag = 0;	
 	page_directory[pd_index].user_supervisor_flag = 1;
 	// set up the base address for video page table, we only care about the first 20 bits
-	page_directory[pd_index].base_address = ((uint32_t)vidmap_page_table >> 12);
+	page_directory[pd_index].base_address = ((uint32_t)vidmap_page_table >> FOUR_KB_BINARY_DIGITS);
 	//TLB flush
 	asm volatile (
 		"movl %%cr3, %%eax		\n\
