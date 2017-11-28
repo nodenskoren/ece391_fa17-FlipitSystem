@@ -29,6 +29,7 @@
 #define FD_STDIN 0
 #define FD_STDOUT 1
 #define PROCESS_MAX 8
+#define NOT_END_OF_FILE_OR_FAILURE 0
 
 #include "types.h"
 
