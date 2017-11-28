@@ -108,6 +108,7 @@ int32_t RTC_read(int32_t fd, void* buf, int32_t nbytes){
 		//printf("%d", RTC_flag);
 	}
 
+    return 0;
 }
 
 /*
