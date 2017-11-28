@@ -581,6 +581,16 @@ int32_t vidmap(uint8_t** screen_start) {
 	return SUCCESS;
 }
 
+/* 
+ * getargs
+ *		DESCRIPTION: Reads the program's command line arguments into a user-level buffer.
+ *		INPUTS: buf - the user-level buffer
+                nbytes - number of bytes to be copied to the buffer
+ *		OUTPUTS: none
+ *		SIDE EFFECT: none
+ *
+ */
+
 int32_t getargs (uint8_t* buf, int32_t nbytes)
 {
 		//printf("it's called\n");
