@@ -9,16 +9,17 @@
 #define EXECUTABLE_THREE  0x46
 
 #define MAX_BUF_LENGTH 128
-#define MAX_NUM_COMMANDS 5
+#define MAX_NUM_COMMANDS 640
 
 #define EXECUTABLE_BYTES 16
 
 /*keyboard buffer and length of buffer*/
 char keyboard_buf[MAX_BUF_LENGTH];
 int buf_position=0;
+int command_position = 0;
 
 /*command buffer holds command until they're read*/
-char command_buf[MAX_NUM_COMMANDS][MAX_BUF_LENGTH];
+char command_buf[MAX_NUM_COMMANDS];
 
 /*flag that lets read know a command is ready*/
 int command_ready_flag = -1;
@@ -64,7 +65,7 @@ int32_t terminal_read(int32_t fd, char *buf, int32_t nbytes){
     
     /*coppies over bytes until nbytes reached or return carrige*/
     while(i < nbytes){
-      char c = command_buf[command_ready_flag][i];
+      char c = command_buf[i];
       if(c == '\n'){
          buf[i] = c;
 	 i++;
@@ -73,7 +74,16 @@ int32_t terminal_read(int32_t fd, char *buf, int32_t nbytes){
       buf[i] = c;
       i++;
     }
-    command_ready_flag--;
+    command_ready_flag=-1;
+	
+	int j;
+    for(j=0;j<i;j++){
+		command_buf[j] = command_buf[j+i];
+	    command_position--;
+    }
+	
+	
+	
     sti();
     return i;
 }
@@ -125,7 +135,7 @@ void add_to_buffer(char c){
      buf_position++;
      print_keyboard_buffer(keyboard_buf,buf_position);
      copy_command_buffer();
-     command_ready_flag++;
+     command_ready_flag=1;
      clear_buffer();
      return;
    }
@@ -171,6 +181,7 @@ void clear_buffer(){
 void copy_command_buffer(){
      int i;
      for(i=0;i<buf_position;i++){
-         command_buf[command_ready_flag+1][i] = keyboard_buf[i];
+         command_buf[command_position] = keyboard_buf[i];
+		 command_position++;
      }
 }
