@@ -43,7 +43,7 @@ typedef struct file_t{
 
 // structure for our process control block
 typedef struct pcb_t{
-	
+
 	file_t file_descriptor_table[8];
 	uint32_t pid;
 	uint32_t esp;
@@ -52,9 +52,19 @@ typedef struct pcb_t{
 	uint32_t esp0;
 	uint32_t ss0;
 	uint8_t arg[128];
-		
-} pcb_t;
 
+} pcb_t;
+/* type define the open functions */
+typedef int32_t (*open_t)(char*);
+
+/* type define the read functions */
+typedef int32_t (*read_t)(int32_t, void*, int32_t);
+
+/* type define the write functions */
+typedef int32_t (*write_t)(int32_t, void*, int32_t);
+
+/* type define the close functions */
+typedef int32_t (*close_t)(int32_t);
 
 // functions necessary to support system call
 extern int32_t read(int32_t fd, void* buf, int32_t nbytes);
@@ -62,7 +72,7 @@ extern int32_t write(int32_t fd, void* buf, int32_t nbytes);
 extern int32_t open(const uint8_t* filename);
 extern int32_t close(int32_t fd);
 extern void stdin_init(int32_t fd);
-extern void stdout_init(int32_t fd); 
+extern void stdout_init(int32_t fd);
 extern int32_t execute(const uint8_t * command);
 extern int32_t vidmap(uint8_t** screen_start);
 extern int32_t getargs (uint8_t* buf, int32_t nbytes);
