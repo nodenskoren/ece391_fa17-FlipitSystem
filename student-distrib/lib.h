@@ -18,7 +18,7 @@ void clear(void);
 /*scrolls the screen when text reaches bottom*/
 void scroll_the_page();
 /*prints keyboard buffer*/
-void print_keyboard_buffer(const char * buf,int buf_position);
+void print_keyboard_buffer(const uint8_t * buf,int buf_position);
 
 void* memset(void* s, int32_t c, uint32_t n);
 void* memset_word(void* s, int32_t c, uint32_t n);

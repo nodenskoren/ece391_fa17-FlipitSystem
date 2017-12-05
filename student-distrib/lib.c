@@ -58,7 +58,7 @@ void clear(void) {
  * OUTPUT: NONE
  * SIDE_EFFCT: Prints current text buffer contents to display
  */
-void print_keyboard_buffer(const char *buf,int buf_position){
+void print_keyboard_buffer(const uint8_t *buf,int buf_position){
         
 	   
 	   int i;

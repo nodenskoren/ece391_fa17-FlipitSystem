@@ -1,4 +1,4 @@
-#include "multiboot.h"
+ #include "multiboot.h"
 #include "x86_desc.h"
 #include "lib.h"
 #include "i8259.h"
@@ -18,8 +18,9 @@
 #define CTRL_RELEASED         0x9D
 #define ENTER_PRESSED         0x1C
 #define CARRIAGE_RETURN       0x0A
-#define  LEFT_ALT             0x38
-#define  RIGHT_ALT            0xB8
+#define  ALT_PRESSED          0x38
+#define  ALT_RELEASED         0xB8
+
 
 
 #define TAB_OPCODE            0x0F
@@ -49,12 +50,14 @@
 #define UPPER_BOUND_SYMBOLS3 0x35
 
 
+
 //uint8_t keyboard_mapping[2][57];  /*  Keyboard array that converts the scancode to ascii value */
 int caps_lock_flag = 0;
 int caps_lock_counter = 0;
 int right_shift_flag = 0;
 int left_shift_flag = 0;
 int control_flag = 0;
+int alt_flag = 0;
 
 
 
@@ -70,6 +73,7 @@ int is_letter(unsigned int c);
 
 cli();
     unsigned int c = inb(KEYBOARD_PORT);
+	//printf("c: %x\n",c);
 	
 sti();
         
@@ -85,8 +89,12 @@ cli_and_save(flags);
           /*do nothing for escape just capture value*/
 	}
 	
-	else if(c == LEFT_ALT || c == RIGHT_ALT) {
-		/* do nothing */
+	else if(c == ALT_PRESSED){
+		alt_flag = 1;
+	}
+	
+	else if(c == ALT_RELEASED){
+		alt_flag = 0;
 	}
 
 	else if( c == CAPS_LOCK_PRESSED){
@@ -140,7 +148,7 @@ cli_and_save(flags);
             /*key release trigger do nothing*/
 	}
 
-	else if(c>=BEGINNING_OF_PRINTABLE && c <=END_OF_PRINTABLE && control_flag!=1){
+	else if(c>=BEGINNING_OF_PRINTABLE && c <=END_OF_PRINTABLE && control_flag!=1 && alt_flag!=1){
             /*printable character pressed---check case status and add to buf*/
 	    
 	    if(caps_lock_counter==0){
@@ -179,6 +187,20 @@ cli_and_save(flags);
 	else if(c == OPCODE_L && control_flag==1){
               clear();
 	      clear_buffer();
+	}
+	else if(control_flag==1 && alt_flag==1){
+		if(c==0x3B){
+			printf("f1");
+			//change_terminal(0);
+		}
+		else if(c==0x3C){
+			printf("f2");
+			//change_terminal(1);
+		}
+		else if(c==0x3D){
+			printf("f3");
+			//change_terminal(2);
+		}
 	}
 	else{
 	/*character not recognized do nothing*/
