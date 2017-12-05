@@ -157,7 +157,7 @@ void entry(unsigned long magic, unsigned long addr) {
 	/*init the RTC_driver*/
 	//RTC_open("yeah");
 
-	pit_init();
+	//pit_init();
 	
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */

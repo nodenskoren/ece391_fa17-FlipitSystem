@@ -69,7 +69,7 @@ int32_t execute(const uint8_t * command){
 /*   The following is checking the file validity   */
 /***************************************************/
 
-
+cli();
 
 
   // check if command is null
@@ -82,7 +82,8 @@ int32_t execute(const uint8_t * command){
   }
 
   // allocate a filename buffer
-  uint8_t filename_buf [file_length+1];
+  //uint8_t filename_buf [file_length+1];
+  uint8_t filename_buf[MAX_BUF_LENGTH];
 	uint8_t arg_buff [cmd_length];
   int i = 0;
 	int j = 0;
@@ -101,12 +102,13 @@ int32_t execute(const uint8_t * command){
   // loop through the command to get the file name
   while(command[i] != '\0' && command[i] != '\n' && command[i] != '\t'&& command[i] != '\r' && command[i] != ' ' )
   {
-	  //printf("%c\n", command[i]);
+	  
     filename_buf[j] = command[i];
     i++;
 		j++;
 
   }
+  sti();
   //printf("%c\n", command[i]);
   // if our filename doesnt end with space, the file name is illegal
   if(j> file_length)

@@ -80,14 +80,18 @@ int32_t terminal_read(int32_t fd, char *buf, int32_t nbytes){
       buf[i] = c;
       i++;
     }
-    command_ready_flag=-1;
+    
 	
 	int j;
     for(j=0;j<i;j++){
+		/* printf("command_position: %d\n",command_position);
+		printf("j: %d\n",j);
+		printf("j+i: %d\n",j+i); */
 		command_buf[j] = command_buf[j+i];
 	    command_position--;
+		
     }
-	
+	command_ready_flag=-1;
 	
 	
     sti();
@@ -109,7 +113,7 @@ int32_t terminal_write(int32_t fd, const char* buf, int32_t nbytes){
     if(buf==NULL)return -1;
 
     /*checks if input is an executable file*/
-    if(nbytes >= EXECUTABLE_BYTES){
+    /* if(nbytes >= EXECUTABLE_BYTES){
        if(buf[0]==EXECUTABLE_ZERO && buf[1]==EXECUTABLE_ONE &&
             buf[2]==EXECUTABLE_TWO && buf[3]==EXECUTABLE_THREE){
             for(i=0;i<EXECUTABLE_BYTES;i++){
@@ -118,7 +122,7 @@ int32_t terminal_write(int32_t fd, const char* buf, int32_t nbytes){
             return EXECUTABLE_BYTES;
 	  }
       
-    }
+    } */
     /*prints none executable file*/
     while(i<nbytes){
        printf("%c",buf[i]);

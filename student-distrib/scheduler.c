@@ -16,6 +16,7 @@ uint32_t esp = 0;
 //= terminal1,terminal2,terminal3;
 
 void scheduler() {
+	
 	//inline save %esp here
 	asm volatile(
 		"movl %%esp, %0"
