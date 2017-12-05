@@ -1,6 +1,7 @@
 #include "terminal_driver.h"
 #include "lib.h"
 #include "keyboard_handler.h"
+#include "scheduler.h"
 
 #define BACKSPACE         0x08
 #define EXECUTABLE_ZERO   0x7F
@@ -13,10 +14,15 @@
 
 #define EXECUTABLE_BYTES 16
 
+//TEMPORARY
+#define CURRENT_VISIBLE 0
+//TEMPORARY
+
 /*keyboard buffer and length of buffer*/
-char keyboard_buf[MAX_BUF_LENGTH];
+//char keyboard_buf[MAX_BUF_LENGTH];
 int buf_position=0;
 int command_position = 0;
+uint8_t *keyboard_buf = terminal[CURRENT_VISIBLE].keyboard_buffer;
 
 /*command buffer holds command until they're read*/
 char command_buf[MAX_NUM_COMMANDS];
@@ -129,6 +135,7 @@ int32_t terminal_write(int32_t fd, const char* buf, int32_t nbytes){
  *Side effect: adds characters to buffer and sets flag if return detected
  */
 void add_to_buffer(char c){
+	
    /*if return detected flag is set and buffer cleared*/
    if(c=='\n'){
      keyboard_buf[buf_position] = '\n';
@@ -165,6 +172,7 @@ void add_to_buffer(char c){
  */
 void clear_buffer(){
    int i;
+   
    for(i=0;i<buf_position;i++){
       keyboard_buf[i] = NULL;
    }
