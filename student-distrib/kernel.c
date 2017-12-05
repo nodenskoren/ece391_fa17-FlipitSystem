@@ -13,6 +13,7 @@
 #include "RTC_driver.h"
 #include "paging.h"
 #include "filesystem.h"
+#include "pit.h"
 #include "systemcall.h"
 
 #define RUN_TESTS
@@ -156,6 +157,8 @@ void entry(unsigned long magic, unsigned long addr) {
 	/*init the RTC_driver*/
 	//RTC_open("yeah");
 
+	pit_init();
+	
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
     filesystem_init((unsigned int)((module_t*)mbi->mods_addr)->mod_start);

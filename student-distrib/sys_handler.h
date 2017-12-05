@@ -5,4 +5,5 @@
 extern void sys_handler(void);
 extern void rtc_wrapper(void);
 extern void keyboard_wrapper(void);
+extern void pit_wrapper(void);
 #endif

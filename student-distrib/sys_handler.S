@@ -1,5 +1,5 @@
 
-.global sys_handler, interrupt_handler, rtc_wrapper, keyboard_wrapper
+.global sys_handler, interrupt_handler, rtc_wrapper, keyboard_wrapper, pit_wrapper
 sys_handler:
 
 	pushfl
@@ -57,6 +57,18 @@ keyboard_wrapper:
 	pushal   # push all registers
 	pushfl   # push all flags 
 	call keyboard_interrupt_handler
+	popfl    # pop all flags 
+	popal    # pop all registers
+	sti
+	
+	iret
+	
+# saves all registers and flags before terminal, restores all registers and flags after
+pit_wrapper:
+	cli
+	pushal   # push all registers
+	pushfl   # push all flags 
+	call pit_handler
 	popfl    # pop all flags 
 	popal    # pop all registers
 	sti
