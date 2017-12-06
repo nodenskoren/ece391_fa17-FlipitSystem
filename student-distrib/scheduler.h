@@ -21,6 +21,7 @@ typedef struct terminal_t{
 	pcb_t* previous_process;
 	uint32_t esp;
 	uint8_t keyboard_buffer[128];
+	int buf_position;
 } terminal_t;
 
 terminal_t terminal[3];

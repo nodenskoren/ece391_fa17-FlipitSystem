@@ -20,7 +20,7 @@
 
 /*keyboard buffer and length of buffer*/
 //char keyboard_buf[MAX_BUF_LENGTH];
-int buf_position=0;
+//int buf_position=0;
 int command_position = 0;
 
 /*command buffer holds command until they're read*/
@@ -141,9 +141,9 @@ void add_to_buffer(char c){
 	
    /*if return detected flag is set and buffer cleared*/
    if(c=='\n'){
-     terminal[terminal_num].keyboard_buffer[buf_position] = '\n';
-     buf_position++;
-     print_keyboard_buffer(terminal[terminal_num].keyboard_buffer,buf_position);
+     terminal[terminal_num].keyboard_buffer[terminal[terminal_num].buf_position] = '\n';
+     terminal[terminal_num].buf_position++;
+     print_keyboard_buffer(terminal[terminal_num].keyboard_buffer,terminal[terminal_num].buf_position);
      copy_command_buffer();
      command_ready_flag=1;
      clear_buffer();
@@ -151,20 +151,20 @@ void add_to_buffer(char c){
    }
 
    else if(c==BACKSPACE){
-     if(buf_position!=0){
-       buf_position -=1;
-       terminal[terminal_num].keyboard_buffer[buf_position]=NULL;
+     if(terminal[terminal_num].buf_position!=0){
+       terminal[terminal_num].buf_position -=1;
+       terminal[terminal_num].keyboard_buffer[terminal[terminal_num].buf_position]=NULL;
      }
    }
-   else if(buf_position==127){
+   else if(terminal[terminal_num].buf_position==127){
      /*do nothing buffer full*/
    }
    else{
-     terminal[terminal_num].keyboard_buffer[buf_position] = c;
-     buf_position++;
+     terminal[terminal_num].keyboard_buffer[terminal[terminal_num].buf_position] = c;
+     terminal[terminal_num].buf_position++;
      
    }
-   print_keyboard_buffer(terminal[terminal_num].keyboard_buffer,buf_position);
+   print_keyboard_buffer(terminal[terminal_num].keyboard_buffer,terminal[terminal_num].buf_position);
 }
 
 /*clear_buffer
@@ -176,11 +176,11 @@ void add_to_buffer(char c){
 void clear_buffer(){
    int i;
    
-   for(i=0;i<buf_position;i++){
+   for(i=0;i<terminal[terminal_num].buf_position;i++){
       terminal[terminal_num].keyboard_buffer[i] = NULL;
    }
-   buf_position = 0;
-   print_keyboard_buffer(terminal[terminal_num].keyboard_buffer,buf_position);
+   terminal[terminal_num].buf_position = 0;
+   print_keyboard_buffer(terminal[terminal_num].keyboard_buffer,terminal[terminal_num].buf_position);
 
 }
 /*copy_command_buffer
@@ -191,7 +191,7 @@ void clear_buffer(){
  */
 void copy_command_buffer(){
      int i;
-     for(i=0;i<buf_position;i++){
+     for(i=0;i<terminal[terminal_num].buf_position;i++){
          command_buf[command_position] = terminal[terminal_num].keyboard_buffer[i];
 		 command_position++;
      }
