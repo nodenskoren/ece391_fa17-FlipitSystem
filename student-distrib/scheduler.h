@@ -15,13 +15,14 @@
 //TEMPORARY SET TO 0
 static int32_t terminal_num = 0;
 //TEMPORARY SET TO 0
-extern uint32_t scheduler(uint32_t esp);
+extern void scheduler();
 
 typedef struct terminal_t{
 	pcb_t* current_pcb;
 	pcb_t* active_process;
 	pcb_t* previous_process;
 	uint32_t esp;
+	uint32_t ebp;
 	uint8_t keyboard_buffer[128];
 	int buf_position;
 } terminal_t;

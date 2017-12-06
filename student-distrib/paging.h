@@ -1,10 +1,19 @@
-#ifndef PAGING_H_
-#define PAGING_H_
+#ifndef _PAGING_H_
+#define _PAGING_H_
 
+#include "multiboot.h"
+#include "x86_desc.h"
+#include "lib.h"
+#include "i8259.h"
+#include "debug.h"
+#include "tests.h"
 
 #define	PAGE_DIRECTORY_SIZE 1024
 #define	PAGE_TABLE_SIZE 1024
 #define VIDEO_MEMORY 184
+#define term_zero_entry 185
+#define term_one_entry 186
+#define term_two_entry 187
 #define VIDEO_MEMORY_ADDRESS 0xB8000
 #define KERNEL_ADDRESS 0x400000
 #define EMPTY_ENTRY 0x00000002
@@ -17,6 +26,9 @@
 #define PD_SIZE_DIGITS 22
 #define PT_MASK 0x003FF000
 #define FOUR_KB 4096
+#define term_zero 0xB9000
+#define term_one	0xBA000
+#define term_two	0xBB000
 
 // bit string structure for page discriptor entry
 typedef struct page_directory_entry {

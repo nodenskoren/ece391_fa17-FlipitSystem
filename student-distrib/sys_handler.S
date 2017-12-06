@@ -66,31 +66,12 @@ keyboard_wrapper:
 # saves all registers and flags before terminal, restores all registers and flags after
 pit_wrapper:
 	cli
-	pushl %eax   # push all registers
-	pushl %ecx
-	pushl %edx
-	pushl %ebx
-	pushl %esp
-	pushl %ebp
-	pushl %esi
-	pushl %edi
+	
+	pushal   # push all registers
 	pushfl   # push all flags
-
-    pushl %esp	
-	call pit_handler
-	popl %esp
-	
+	call scheduler
 	popfl    # pop all flags 
-	popl %edi    # pop all registers
-	popl %esi
-	popl %ebp
-	popl %esp
-	popl %ebx
-	popl %edx
-	popl %ecx
-	addl $4,%esp
-	
-	movl %eax,%esp
+	popal    # pop all registers
 	
 	sti
 	
