@@ -62,7 +62,7 @@ void pit_handler(){
 	cli_and_save(flags);  // make sure the loading is protected
 	
 	// call scheduler function 
-	
+	//printf("test");
 	
 	restore_flags(flags); 
 	send_eoi(PIT_IRQ_NUM);
