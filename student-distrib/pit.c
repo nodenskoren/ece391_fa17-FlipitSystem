@@ -58,14 +58,14 @@ void pit_init(){
  */
 
 void pit_handler(){
-	uint32_t flags;	
-	cli_and_save(flags);  // make sure the loading is protected
+	/* uint32_t flags;	
+	//cli_and_save(flags);  // make sure the loading is protected
 	
 	// call scheduler function 
-	//printf("test");
 	
-	restore_flags(flags); 
-	send_eoi(PIT_IRQ_NUM);
+	printf("hello");
+	//restore_flags(flags); 
+	send_eoi(PIT_IRQ_NUM); */
 	
 	
 }
