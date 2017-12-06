@@ -10,7 +10,7 @@
 
 
 
-int32_t terminal_num = -1;
+
 
 uint32_t esp = 0;
 //= terminal1,terminal2,terminal3;

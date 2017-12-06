@@ -1,6 +1,7 @@
 #include "lib.h"
 #include "filesystem.h"
 #include "systemcall.h"
+#include "scheduler.h"
 
 static boot_block* filesystem_addr;
 //static uint32_t file_offset;
@@ -372,10 +373,10 @@ int32_t regular_file_read(int32_t fd, uint8_t* buf, uint32_t count) {
 	}
 	int32_t length_read;
 	/* Read the data by calling read_data function */
-	length_read = read_data(active_process->file_descriptor_table[fd].inode, active_process->file_descriptor_table[fd].f_offset, buf, count);
+	length_read = read_data(terminal[terminal_num].active_process->file_descriptor_table[fd].inode, terminal[terminal_num].active_process->file_descriptor_table[fd].f_offset, buf, count);
 	/* Add the progress read */
 	//file_offset += length_read;
-	active_process->file_descriptor_table[fd].f_offset += length_read;
+	terminal[terminal_num].active_process->file_descriptor_table[fd].f_offset += length_read;
 	return length_read;
 }
 
@@ -487,11 +488,11 @@ int32_t directory_file_open() {
 int32_t directory_file_read(int32_t fd, uint8_t* buf, uint32_t length) {
 	dentry_t dentry;
 	/* If the buffer doesn't exist or if the directory entry doesn't exist, return -1 */
-	if((buf == NULL) || (read_dentry_by_index(active_process->file_descriptor_table[fd].f_offset, &(dentry)) == -1)) {
+	if((buf == NULL) || (read_dentry_by_index(terminal[terminal_num].active_process->file_descriptor_table[fd].f_offset, &(dentry)) == -1)) {
 		return FAILURE;
 	}
 	/* If EOF has been reached, read nothing and return 0 */
-	if(active_process->file_descriptor_table[fd].f_offset >= filesystem_addr->dentry_count) {
+	if(terminal[terminal_num].active_process->file_descriptor_table[fd].f_offset >= filesystem_addr->dentry_count) {
 		return SUCCESS;
 	}
 	/* If the input length is greater than 32, truncate it down to 32 */
@@ -505,7 +506,7 @@ int32_t directory_file_read(int32_t fd, uint8_t* buf, uint32_t length) {
 	}
 	/* Copy the string to the buffer */
 	strncpy((int8_t*)buf, (int8_t*)&(dentry.file_name), length);
-	active_process->file_descriptor_table[fd].f_offset += 1;
+	terminal[terminal_num].active_process->file_descriptor_table[fd].f_offset += 1;
 	//dentry_offset++;
 	return length;
 }

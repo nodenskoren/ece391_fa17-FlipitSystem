@@ -7,6 +7,7 @@
 #include "keyboard_handler.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "scheduler.h"
 
 //#define 8MB_PAGE 0x800000
 //#define 8KB_PAGE 0x2000
@@ -29,8 +30,8 @@
 #define four_bytes 4
 
 static int ret_val =0;
-pcb_t* active_process = NULL;
-pcb_t* previous_process = NULL;
+//pcb_t* active_process = NULL;
+//pcb_t* previous_process = NULL;
 uint32_t pid_array[PROCESS_MAX];
 
 /* jump tables for different operations */
@@ -43,13 +44,13 @@ int32_t dir_jmp_table[NUM_OF_OP] = {(int32_t)directory_file_open, (int32_t)direc
 
 
 void stdin_init(int32_t fd) {
-	active_process->file_descriptor_table[fd].f_op = stdin_jmp_table;
-	active_process->file_descriptor_table[fd].active = ACTIVE;
+	terminal[terminal_num].active_process->file_descriptor_table[fd].f_op = stdin_jmp_table;
+	terminal[terminal_num].active_process->file_descriptor_table[fd].active = ACTIVE;
 }
 
 void stdout_init(int32_t fd) {
-	active_process->file_descriptor_table[fd].f_op = stdout_jmp_table;
-	active_process->file_descriptor_table[fd].active = ACTIVE;
+	terminal[terminal_num].active_process->file_descriptor_table[fd].f_op = stdout_jmp_table;
+	terminal[terminal_num].active_process->file_descriptor_table[fd].active = ACTIVE;
 }
 
 
@@ -176,29 +177,30 @@ cli();
 	return -1;
   }
   // store pcb to 8MB - (pid+1) * 8kb
-  pcb_t* current_pcb = (pcb_t*)(eightmeg_page - (i + 1) * eightkilo_page);
-  current_pcb->pid = i;
+  pcb_t* current_pcb2 = (pcb_t*)(eightmeg_page - (i + 1) * eightkilo_page);
+  current_pcb2->pid = i;
+  terminal[terminal_num].current_pcb = current_pcb2;
   int l=0;
  while(arg_buff[l] != '\0'){
-	current_pcb->arg[l] = arg_buff[l];
+	terminal[terminal_num].current_pcb->arg[l] = arg_buff[l];
 	l++;
   }
-  current_pcb->arg[l] = '\0';
+  terminal[terminal_num].current_pcb->arg[l] = '\0';
 
 	// open FDs, update the global process info
   // root case
-	if(active_process == NULL) {
+	if(terminal[terminal_num].active_process == NULL) {
 		//printf("1\n");
-		active_process = current_pcb;
+		terminal[terminal_num].active_process = terminal[terminal_num].current_pcb;
 		//active_process->parent_pcb == NULL;
 	}
 
 	/* If not, set the parent before doing the process switch */
 	else{
 		//printf("2\n");
-		previous_process = active_process;
-		active_process = current_pcb;
-		active_process->parent_pcb = previous_process;
+		terminal[terminal_num].previous_process = terminal[terminal_num].active_process;
+		terminal[terminal_num].active_process = terminal[terminal_num].current_pcb;
+		terminal[terminal_num].active_process->parent_pcb = terminal[terminal_num].previous_process;
 	}
 
 	//active_process = current_pcb;
@@ -208,7 +210,7 @@ cli();
   stdout_init(Stdout_FD);
 
   // setting up paging
-  user_page_init(current_pcb->pid);
+  user_page_init(terminal[terminal_num].current_pcb->pid);
   //printf("pid: %d\n", current_pcb->pid);
 
   // store esp and ebp into pcb
@@ -224,16 +226,16 @@ cli();
 
   /* bug */
     // see if we need to store parent pcb pointer
-  if(active_process->parent_pcb != NULL){
+  if(terminal[terminal_num].active_process->parent_pcb != NULL){
 	  //printf("output I\n");
 	  //current_pcb->parent_pcb = (pcb_t*)(eightmeg_page - (active_process->pid) * eightkilo_page );
-	  current_pcb->esp = esp;
-	  current_pcb->ebp = ebp;
+	  terminal[terminal_num].current_pcb->esp = esp;
+	  terminal[terminal_num].current_pcb->ebp = ebp;
   }
 
   else{
 	  //printf("output II\n");
-	  current_pcb->parent_pcb = NULL;
+	  terminal[terminal_num].current_pcb->parent_pcb = NULL;
   }
 
 
@@ -249,8 +251,8 @@ cli();
   // update tss before iret
   tss.esp0 = (eightmeg_page - i * eightkilo_page - four_bytes);
   tss.ss0 = KERNEL_DS;
-  current_pcb->esp0 = tss.esp0;
-  current_pcb->ss0	= tss.ss0;
+  terminal[terminal_num].current_pcb->esp0 = tss.esp0;
+  terminal[terminal_num].current_pcb->ss0	= tss.ss0;
   //active_process = current_pcb;
 
 asm volatile (
@@ -293,7 +295,7 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes) {
 		return FAILURE;
 	}
 	/* If the entry has not been opened, invalidate the call */
-	if(active_process->file_descriptor_table[fd].active != ACTIVE) {
+	if(terminal[terminal_num].active_process->file_descriptor_table[fd].active != ACTIVE) {
 		return FAILURE;
 	}
 
@@ -326,7 +328,7 @@ int32_t write(int32_t fd, void* buf, int32_t nbytes) {
 	}
 
 	/* If the entry has not been opened, invalidate the call */
-	if(active_process->file_descriptor_table[fd].active != ACTIVE) {
+	if(terminal[terminal_num].active_process->file_descriptor_table[fd].active != ACTIVE) {
 		return FAILURE;
 	}
 
@@ -351,7 +353,7 @@ int32_t write(int32_t fd, void* buf, int32_t nbytes) {
  */
 int32_t open(const uint8_t* filename) {
 	//printf("FILE_OPEN!_1");
-	pcb_t* curr_process = active_process;
+	pcb_t* curr_process = terminal[terminal_num].active_process;
 	file_t* fds = curr_process->file_descriptor_table;
 	dentry_t d_entry;
 
@@ -423,12 +425,12 @@ int32_t close(int32_t fd) {
 		return FAILURE;
 
 	/* If the entry has not been opened, invalidate the call */
-	if(active_process->file_descriptor_table[fd].active == INACTIVE) {
+	if(terminal[terminal_num].active_process->file_descriptor_table[fd].active == INACTIVE) {
 		return FAILURE;
 	}
 
 	/* Turn off the active flag of the entry specified by fd */
-	active_process->file_descriptor_table[fd].active = INACTIVE;
+	terminal[terminal_num].active_process->file_descriptor_table[fd].active = INACTIVE;
 	return 0;
 }
 
@@ -443,7 +445,7 @@ int32_t close(int32_t fd) {
  *
  */
 int32_t read_func(int32_t fd, void* buf, int32_t nbytes) {
-	read_t read_function = (read_t)active_process->file_descriptor_table[fd].f_op[READ];
+	read_t read_function = (read_t)terminal[terminal_num].active_process->file_descriptor_table[fd].f_op[READ];
 	return read_function(fd, buf, nbytes);
 }
 
@@ -458,7 +460,7 @@ int32_t read_func(int32_t fd, void* buf, int32_t nbytes) {
  *
  */
 int32_t write_func(int32_t fd, void* buf, int32_t nbytes) {
-	write_t write_function = (write_t)active_process->file_descriptor_table[fd].f_op[WRITE];
+	write_t write_function = (write_t)terminal[terminal_num].active_process->file_descriptor_table[fd].f_op[WRITE];
 	return write_function(fd, buf, nbytes);
 }
 
@@ -478,7 +480,7 @@ int32_t halt (uint8_t status){
 	uint32_t fd = 2;
 	// close any relevant FDs
 
-	while(active_process->file_descriptor_table[fd].active == ACTIVE) {
+	while(terminal[terminal_num].active_process->file_descriptor_table[fd].active == ACTIVE) {
 		 close(fd);
 		 fd++;
 	}
@@ -486,17 +488,17 @@ int32_t halt (uint8_t status){
 
 
 	// restore parent paging
-	if(active_process->parent_pcb != NULL)
+	if(terminal[terminal_num].active_process->parent_pcb != NULL)
 	{
-		user_page_init(active_process->parent_pcb->pid);
+		user_page_init(terminal[terminal_num].active_process->parent_pcb->pid);
 		// change the tss esp0 to point to the bottom of 8kb kernel process, the kernel stack
-		tss.esp0 = active_process->parent_pcb->esp0;
-		tss.ss0 = active_process->parent_pcb->ss0;
-		pid_array[active_process->pid] =0;
+		tss.esp0 = terminal[terminal_num].active_process->parent_pcb->esp0;
+		tss.ss0 = terminal[terminal_num].active_process->parent_pcb->ss0;
+		pid_array[terminal[terminal_num].active_process->pid] =0;
 		int i = 0;
 		for(i=0; i< cmd_length; i++)
 		{
-			active_process->parent_pcb->arg[i] = '\0';
+			terminal[terminal_num].active_process->parent_pcb->arg[i] = '\0';
 		}
 	}
 	else
@@ -515,19 +517,19 @@ int32_t halt (uint8_t status){
 	if(is_shell == 1)
 	{
 		//printf("Output 7\n");
-		active_process = NULL;
+		terminal[terminal_num].active_process = NULL;
 		printf("restarting the shell\n");
 		execute((uint8_t *)"shell");
 	}
 	// jump to execute return
 
-	uint32_t esp = active_process->esp;
+	uint32_t esp = terminal[terminal_num].active_process->esp;
 			//printf("Output 8\n");
 
-	uint32_t ebp = active_process->ebp;
+	uint32_t ebp = terminal[terminal_num].active_process->ebp;
 			//printf("Output 9\n");
 
-	active_process = active_process->parent_pcb;
+	terminal[terminal_num].active_process = terminal[terminal_num].active_process->parent_pcb;
 		//printf("Output 10\n");
 
 
@@ -583,7 +585,7 @@ int32_t getargs (uint8_t* buf, int32_t nbytes)
 		//printf("it's called\n");
 		if (buf == NULL || nbytes<=0)
 			return -1;
-		pcb_t* curr_process = active_process;
+		pcb_t* curr_process = terminal[terminal_num].active_process;
 		int32_t pcb_arg_length = strlen((int8_t*)curr_process->arg);
 		if (pcb_arg_length == 0)
 			return -1;

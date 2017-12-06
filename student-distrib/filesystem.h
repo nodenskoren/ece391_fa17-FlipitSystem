@@ -1,3 +1,6 @@
+#ifndef FILESYSTEM_H_
+#define FILESYSTEM_H_
+
 #define DIRECTORY_FILE 1
 #define REGULAR_FILE 2
 #define BLOCKSIZE 4096
@@ -77,3 +80,5 @@ extern void test_read_dentry();
 extern void print_out_every_file();
 extern void test_read_file_non_text();
 extern void test_read_index();
+
+#endif

@@ -1,3 +1,6 @@
+#ifndef SYSTEMCALL_H_
+#define SYSTEMCALL_H_
+
 #define SUCCESS 0
 #define FAILURE -1
 #define ACTIVE 1
@@ -78,3 +81,5 @@ extern int32_t vidmap(uint8_t** screen_start);
 extern int32_t getargs (uint8_t* buf, int32_t nbytes);
 extern int32_t read_func(int32_t fd, void* buf, int32_t nbytes);
 extern int32_t write_func(int32_t fd, void* buf, int32_t nbytes);
+
+#endif

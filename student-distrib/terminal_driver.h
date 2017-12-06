@@ -1,5 +1,5 @@
-#ifndef KYEBOARD_HANDLER_H_
-#define KEYBOARD_HANDLER_H_
+#ifndef TERMINAL_HANDLER_H_
+#define TERMINAL_HANDLER_H_
 
 #include "lib.h"
 

@@ -1,3 +1,7 @@
+#ifndef PAGING_H_
+#define PAGING_H_
+
+
 #define	PAGE_DIRECTORY_SIZE 1024
 #define	PAGE_TABLE_SIZE 1024
 #define VIDEO_MEMORY 184
@@ -56,3 +60,5 @@ extern void paging_init();
 extern void user_page_init(uint32_t process_num);
 extern void vidmap_page_initialization();
 extern void vidmap_desc_init();
+
+#endif
