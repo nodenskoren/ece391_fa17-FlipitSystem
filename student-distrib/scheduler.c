@@ -7,23 +7,9 @@
 
 //1->2 (0)
 
-
-
-
-
-
-uint32_t esp = 0;
 //= terminal1,terminal2,terminal3;
 
-void scheduler() {
-	
-	//inline save %esp here
-	asm volatile(
-		"movl %%esp, %0"
-		: "=r"(esp)
-		:
-		: "memory"
-	);
+uint32_t scheduler(uint32_t esp) {
 	
 	terminal_num++;
 	terminal_num = terminal_num % 3;
@@ -60,6 +46,11 @@ void scheduler() {
 			tss.ss0 = KERNEL_DS;				
 	}
 	
+	send_eoi(0);
+	
+	return esp;
+	
+	/*
 	asm volatile(
 		"movl %%eax, %%esp"
 		:
@@ -69,6 +60,6 @@ void scheduler() {
 	
 	asm volatile(
 		"iret"
-	);
+	);*/
 }
 

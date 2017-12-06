@@ -10,10 +10,12 @@
 #include "keyboard_handler.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "i8259.h"
+
 //TEMPORARY SET TO 0
 static int32_t terminal_num = 0;
 //TEMPORARY SET TO 0
-extern void scheduler();
+extern uint32_t scheduler(uint32_t esp);
 
 typedef struct terminal_t{
 	pcb_t* current_pcb;
