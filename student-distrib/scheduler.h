@@ -13,7 +13,8 @@
 #include "i8259.h"
 
 //TEMPORARY SET TO 0
-static int32_t terminal_num = 0;
+extern int32_t terminal_num;
+extern int32_t current_visible;
 //TEMPORARY SET TO 0
 extern void scheduler();
 
@@ -25,8 +26,6 @@ typedef struct terminal_t{
 	uint32_t ebp;
 	uint8_t keyboard_buffer[128];
 	int buf_position;
-	//temporary
-	uint32_t current_videomem;
 } terminal_t;
 
 

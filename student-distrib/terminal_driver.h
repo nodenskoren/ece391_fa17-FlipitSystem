@@ -5,6 +5,10 @@
 
 #define MAX_BUF_LENGTH 128
 
+
+
+
+
 /*system call opens file*/
 extern int32_t terminal_open();
 /*system call to close file*/

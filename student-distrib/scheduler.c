@@ -8,6 +8,9 @@
 //1->2 (0)
 
 //= terminal1,terminal2,terminal3;
+
+int32_t terminal_num = -1;
+int32_t current_visible = 0;
 uint32_t esp;
 uint32_t ebp;
 
@@ -26,11 +29,9 @@ void scheduler() {
 	terminal_num = terminal_num % 3;
 	
 	if(terminal[terminal_num].current_pcb == NULL) {
-		terminal[0].current_videomem = 0xB8000;
-        terminal[1].current_videomem = 0xBA000;
-        terminal[2].current_videomem = 0xBB000;
 		terminal[terminal_num].esp = esp;
 		terminal[terminal_num].ebp = ebp;
+		term_page_switch();
 		send_eoi(0);
 		execute((uint8_t *)"shell");
 	}
@@ -41,6 +42,7 @@ void scheduler() {
 			terminal[0].ebp = ebp;
 			/* need init function */
 			user_page_init(terminal[0].current_pcb->pid);
+			term_page_switch();
 			/* restore in assembly later */
 			esp = terminal[1].esp;
 			ebp = terminal[1].ebp;
@@ -53,6 +55,7 @@ void scheduler() {
 			terminal[1].ebp = ebp;
 			/* need init function */			
 			user_page_init(terminal[1].current_pcb->pid);
+			term_page_switch();
 			esp = terminal[2].esp;
 			ebp = terminal[2].ebp;
 			tss.esp0 = terminal[1].current_pcb->esp0;
@@ -64,6 +67,7 @@ void scheduler() {
 			terminal[2].ebp = ebp;
 			/* need init function */			
 			user_page_init(terminal[2].current_pcb->pid);
+			term_page_switch();
 			esp = terminal[0].esp;
 			ebp = terminal[0].ebp;
 			tss.esp0 = terminal[2].current_pcb->esp0;

@@ -190,16 +190,16 @@ cli_and_save(flags);
 	}
 	else if(control_flag==1 && alt_flag==1){
 		if(c==0x3B){
-			printf("f1");
-			//change_terminal(0);
+			//printf("f1");
+			term_visible_switch(0);
 		}
 		else if(c==0x3C){
-			printf("f2");
-			//change_terminal(1);
+			//printf("f2");
+			term_visible_switch(1);
 		}
 		else if(c==0x3D){
-			printf("f3");
-			//change_terminal(2);
+			//printf("f3");
+			term_visible_switch(2);
 		}
 	}
 	else{

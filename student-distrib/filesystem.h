@@ -26,6 +26,9 @@
 
 extern uint32_t inode_start;
 
+
+
+
 typedef struct dentry_t {
 	uint8_t file_name[FILE_NAME_MAX_LENGTH];
 	uint32_t file_type;
