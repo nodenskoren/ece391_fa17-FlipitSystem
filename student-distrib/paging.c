@@ -237,7 +237,7 @@ void vidmap_desc_init(){
  *     output -- none
  *     side effect -- inintialize vidmap table entries for backup terminal VGAs
  */
-/*  void term_page_int()
+ void term_page_int()
 {
 		// initalize terminal 0 vga backup
 		video_page_table[term_zero_entry].base_address = (term_zero >> FOUR_KB_BINARY_DIGITS);
@@ -267,7 +267,7 @@ void vidmap_desc_init(){
 		vidmap_page_table[3].base_addr = (term_two >> FOUR_KB_BINARY_DIGITS);
 		vidmap_page_table[3].present_flag = 1;
 		vidmap_page_table[3].user_supervisor_flag = 1;
-} */
+}
 
 /*
  * term_page_switch
@@ -278,7 +278,7 @@ void vidmap_desc_init(){
  *     and then copy the back up vga into the current vga
  */
 
- /* void term_page_switch(uint32_t term_num)
+ void term_switch(uint32_t term_num)
 {
 		switch(CURRENT_VISIBLE)
 		{
@@ -286,24 +286,54 @@ void vidmap_desc_init(){
 					memcpy(VIDEO_MEMORY_ADDRESS, term_zero,FOUR_KB);
 					clear();
 					memcpy((185+term_num)*FOUR_KB,VIDEO_MEMORY_ADDRESS,FOUR_KB);
+					terminal[term_num].current_videomem = VIDEO_MEMORY_ADDRESS;
+					terminal[0].current_videomem = term_zero;
 					CURRENT_VISIBLE = term_num;
 					//vidmap_page_table[1].base_addr = VIDEO_MEMORY_ADDRESS;
+
+					//term_page_switch(term_num);
 					break;
 				case 1:
 					memcpy(VIDEO_MEMORY_ADDRESS, term_one,FOUR_KB);
 					clear();
-					memcpy((185+term_num)*FOUR_KB,VIDEO_MEMORY_ADDRESS,FOUR_KB); = 2;
+					memcpy((185+term_num)*FOUR_KB,VIDEO_MEMORY_ADDRESS,FOUR_KB);
+					terminal[term_num].current_videomem = VIDEO_MEMORY_ADDRESS;
+					terminal[0].current_videomem = term_zero;
           CURRENT_VISIBLE = term_num;
-					//vidmap_page_table[2].base_addr = VIDEO_MEMORY_ADDRESS;
+					//vidmap_page_table[2].base_addr = VIDEO_MEMORY_ADDRESS; =
+
+					term_page_switch(term_num);
 					break;
 				case 2:
 					memcpy(VIDEO_MEMORY_ADDRESS, term_two,FOUR_KB);
 					clear();
 					memcpy((185+term_num)*FOUR_KB,VIDEO_MEMORY_ADDRESS,FOUR_KB);
+					terminal[term_num].current_videomem = VIDEO_MEMORY_ADDRESS;
+					terminal[0].current_videomem = term_zero;
           CURRENT_VISIBLE = term_num;
 					//vidmap_page_table[3].base_addr = VIDEO_MEMORY_ADDRESS;
+					//term_page_switch(term_num);
 					break;
 
 		}
 
-} */
+}
+
+/*
+ * term_page_switch
+ *     helper function to initialize the backups for terminal VGA
+ *     input -- term_num: the terminal number that we want to swtich to
+ *     output -- none
+ *     side effect -- copy the current vid memory into backup vga
+ *     and then copy the back up vga into the current vga
+ */
+ void term_switch(uint32_t term_num)
+ {
+	 switch (term_num){
+		 case 0:
+
+		 case 1:
+
+		 case 2:
+	 }
+ }
