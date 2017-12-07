@@ -171,6 +171,8 @@ void entry(unsigned long magic, unsigned long addr) {
     sti();
     /*init paging*/
     paging_init();
+	
+	
 	//pit_init();
 	
 	execute((uint8_t *)"shell");
