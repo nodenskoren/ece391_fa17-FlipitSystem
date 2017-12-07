@@ -25,7 +25,10 @@ typedef struct terminal_t{
 	uint32_t esp;
 	uint32_t ebp;
 	uint8_t keyboard_buffer[128];
+	int previous_buf_length;
 	int buf_position;
+	int screen_x;
+	int screen_y;
 } terminal_t;
 
 

@@ -1,25 +1,44 @@
 boot.o: boot.S multiboot.h x86_desc.h types.h
 sys_handler.o: sys_handler.S
 x86_desc.o: x86_desc.S x86_desc.h types.h
-filesystem.o: filesystem.c lib.h types.h filesystem.h systemcall.h
-i8259.o: i8259.c i8259.h types.h lib.h
-initialize_idt.o: initialize_idt.c x86_desc.h types.h lib.h i8259.h \
-  initialize_idt.h RTC_driver.h sys_handler.h systemcall.h
-kernel.o: kernel.c multiboot.h types.h x86_desc.h lib.h i8259.h debug.h \
-  tests.h initialize_idt.h RTC_driver.h sys_handler.h keyboard_handler.h \
-  paging.h filesystem.h pit.h systemcall.h
+filesystem.o: filesystem.c lib.h types.h scheduler.h systemcall.h \
+  filesystem.h paging.h multiboot.h x86_desc.h i8259.h debug.h tests.h \
+  terminal_driver.h RTC_driver.h sys_handler.h keyboard_handler.h
+i8259.o: i8259.c i8259.h types.h lib.h scheduler.h systemcall.h \
+  filesystem.h paging.h multiboot.h x86_desc.h debug.h tests.h \
+  terminal_driver.h RTC_driver.h sys_handler.h keyboard_handler.h
+initialize_idt.o: initialize_idt.c x86_desc.h types.h lib.h scheduler.h \
+  systemcall.h filesystem.h paging.h multiboot.h i8259.h debug.h tests.h \
+  terminal_driver.h RTC_driver.h sys_handler.h keyboard_handler.h \
+  initialize_idt.h
+kernel.o: kernel.c multiboot.h types.h x86_desc.h lib.h scheduler.h \
+  systemcall.h filesystem.h paging.h i8259.h debug.h tests.h \
+  terminal_driver.h RTC_driver.h sys_handler.h keyboard_handler.h \
+  initialize_idt.h pit.h
 keyboard_handler.o: keyboard_handler.c multiboot.h types.h x86_desc.h \
-  lib.h i8259.h debug.h tests.h keyboard_handler.h terminal_driver.h
-lib.o: lib.c lib.h types.h
-paging.o: paging.c multiboot.h types.h x86_desc.h lib.h i8259.h debug.h \
-  tests.h paging.h
-pit.o: pit.c pit.h lib.h types.h i8259.h sys_handler.h x86_desc.h
-RTC_driver.o: RTC_driver.c x86_desc.h types.h lib.h RTC_driver.h i8259.h \
-  sys_handler.h
+  lib.h scheduler.h systemcall.h filesystem.h paging.h i8259.h debug.h \
+  tests.h terminal_driver.h RTC_driver.h sys_handler.h keyboard_handler.h
+lib.o: lib.c lib.h types.h scheduler.h systemcall.h filesystem.h paging.h \
+  multiboot.h x86_desc.h i8259.h debug.h tests.h terminal_driver.h \
+  RTC_driver.h sys_handler.h keyboard_handler.h
+paging.o: paging.c paging.h multiboot.h types.h x86_desc.h lib.h \
+  scheduler.h systemcall.h filesystem.h terminal_driver.h RTC_driver.h \
+  i8259.h sys_handler.h keyboard_handler.h debug.h tests.h
+pit.o: pit.c pit.h lib.h types.h scheduler.h systemcall.h filesystem.h \
+  paging.h multiboot.h x86_desc.h i8259.h debug.h tests.h \
+  terminal_driver.h RTC_driver.h sys_handler.h keyboard_handler.h
+RTC_driver.o: RTC_driver.c x86_desc.h types.h lib.h scheduler.h \
+  systemcall.h filesystem.h paging.h multiboot.h i8259.h debug.h tests.h \
+  terminal_driver.h RTC_driver.h sys_handler.h keyboard_handler.h
+scheduler.o: scheduler.c scheduler.h systemcall.h types.h filesystem.h \
+  paging.h multiboot.h x86_desc.h lib.h i8259.h debug.h tests.h \
+  terminal_driver.h RTC_driver.h sys_handler.h keyboard_handler.h
 systemcall.o: systemcall.c systemcall.h types.h filesystem.h paging.h \
-  terminal_driver.h lib.h RTC_driver.h i8259.h sys_handler.h \
-  keyboard_handler.h x86_desc.h
+  multiboot.h x86_desc.h lib.h scheduler.h terminal_driver.h RTC_driver.h \
+  i8259.h sys_handler.h keyboard_handler.h debug.h tests.h
 terminal_driver.o: terminal_driver.c terminal_driver.h lib.h types.h \
-  keyboard_handler.h
-tests.o: tests.c tests.h x86_desc.h types.h lib.h terminal_driver.h \
-  RTC_driver.h i8259.h sys_handler.h
+  scheduler.h systemcall.h filesystem.h paging.h multiboot.h x86_desc.h \
+  i8259.h debug.h tests.h RTC_driver.h sys_handler.h keyboard_handler.h
+tests.o: tests.c tests.h x86_desc.h types.h lib.h scheduler.h \
+  systemcall.h filesystem.h paging.h multiboot.h i8259.h debug.h \
+  terminal_driver.h RTC_driver.h sys_handler.h keyboard_handler.h

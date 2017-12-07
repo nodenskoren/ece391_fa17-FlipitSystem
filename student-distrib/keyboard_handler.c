@@ -188,7 +188,7 @@ cli_and_save(flags);
               clear();
 	      clear_buffer();
 	}
-	else if(control_flag==1 && alt_flag==1){
+	else if(alt_flag==1){
 		if(c==0x3B){
 			//printf("f1");
 			term_visible_switch(0);

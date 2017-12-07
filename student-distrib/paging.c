@@ -285,7 +285,7 @@ void vidmap_desc_init(){
 		{
 				case 0:
 					memcpy((void*)VIDEO_MEMORY_ADDRESS, (void*)term_zero,FOUR_KB);
-					clear();
+					//clear();
 					memcpy((void*)((term_zero_entry+dest)*FOUR_KB),(void*)VIDEO_MEMORY_ADDRESS,FOUR_KB);
 
 					current_visible = terminal_num;
@@ -293,15 +293,15 @@ void vidmap_desc_init(){
 					break;
 				case 1:
 					memcpy((void*)VIDEO_MEMORY_ADDRESS, (void*)term_one,FOUR_KB);
-					clear();
-					memcpy((void*)((term_one_entry+dest)*FOUR_KB),(void*)VIDEO_MEMORY_ADDRESS,FOUR_KB);
+					//clear();
+					memcpy((void*)((term_zero_entry+dest)*FOUR_KB),(void*)VIDEO_MEMORY_ADDRESS,FOUR_KB);
           current_visible = terminal_num;
 					//vidmap_page_table[2].base_addr = VIDEO_MEMORY_ADDRESS; =
 					break;
 				case 2:
 					memcpy((void*)VIDEO_MEMORY_ADDRESS, (void*)term_two,FOUR_KB);
-					clear();
-					memcpy((void*)((term_two_entry+dest)*FOUR_KB),(void*)VIDEO_MEMORY_ADDRESS,FOUR_KB);
+					//clear();
+					memcpy((void*)((term_zero_entry+dest)*FOUR_KB),(void*)VIDEO_MEMORY_ADDRESS,FOUR_KB);
 
           current_visible = dest;
 					break;
@@ -321,9 +321,9 @@ void vidmap_desc_init(){
  void term_page_switch()
  {
 	 if(current_visible == terminal_num)
-	 video_page_table[VIDEO_MEMORY].base_address = VIDEO_MEMORY_ADDRESS;
+	 video_page_table[VIDEO_MEMORY].base_address = VIDEO_MEMORY_ADDRESS>>12;
 	 //vidmap_page_table[1].base_addr = VIDEO_MEMORY_ADDRESS;
 	 else
-	 video_page_table[VIDEO_MEMORY].base_address = (term_zero_entry+terminal_num)*FOUR_KB;
+	 video_page_table[VIDEO_MEMORY].base_address = ((term_zero_entry+terminal_num)*FOUR_KB)>>12;
  
  }

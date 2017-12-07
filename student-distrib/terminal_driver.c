@@ -60,6 +60,7 @@ int32_t terminal_close(){
  *Side effect: coppies command buffer into input buffer
  */
 int32_t terminal_read(int32_t fd, char *buf, int32_t nbytes){
+	
      if(nbytes<0) return -1;
      if(buf==NULL) return -1;
      
@@ -105,6 +106,7 @@ int32_t terminal_read(int32_t fd, char *buf, int32_t nbytes){
  *Side effects: prints input buf to the screen
  */
 int32_t terminal_write(int32_t fd, const char* buf, int32_t nbytes){
+	cli();
     int i = 0;
 
     /*error cases*/
@@ -127,7 +129,7 @@ int32_t terminal_write(int32_t fd, const char* buf, int32_t nbytes){
        printf("%c",buf[i]);
        i++;
     }
-
+    sti();
     return i;
 }
 
@@ -138,12 +140,13 @@ int32_t terminal_write(int32_t fd, const char* buf, int32_t nbytes){
  *Side effect: adds characters to buffer and sets flag if return detected
  */
 void add_to_buffer(char c){
-	
+	//cli();
    /*if return detected flag is set and buffer cleared*/
    if(c=='\n'){
-     terminal[terminal_num].keyboard_buffer[terminal[terminal_num].buf_position] = '\n';
-     terminal[terminal_num].buf_position++;
-     print_keyboard_buffer(terminal[terminal_num].keyboard_buffer,terminal[terminal_num].buf_position);
+     terminal[current_visible].keyboard_buffer[terminal[current_visible].buf_position] = '\n';
+     terminal[current_visible].buf_position++;
+	 printf("%c",'\n');
+     //print_keyboard_buffer(terminal[current_visible].keyboard_buffer,terminal[current_visible].buf_position);
      copy_command_buffer();
      command_ready_flag=1;
      clear_buffer();
@@ -151,20 +154,25 @@ void add_to_buffer(char c){
    }
 
    else if(c==BACKSPACE){
-     if(terminal[terminal_num].buf_position!=0){
-       terminal[terminal_num].buf_position -=1;
-       terminal[terminal_num].keyboard_buffer[terminal[terminal_num].buf_position]=NULL;
+     if(terminal[current_visible].buf_position!=0){
+		 
+       terminal[current_visible].buf_position -=1;
+       terminal[current_visible].keyboard_buffer[terminal[current_visible].buf_position]=NULL;
+	   printf("%c",c);
      }
    }
-   else if(terminal[terminal_num].buf_position==127){
+   else if(terminal[current_visible].buf_position==127){
      /*do nothing buffer full*/
    }
    else{
-     terminal[terminal_num].keyboard_buffer[terminal[terminal_num].buf_position] = c;
-     terminal[terminal_num].buf_position++;
+     terminal[current_visible].keyboard_buffer[terminal[current_visible].buf_position] = c;
+     terminal[current_visible].buf_position++;
+	 printf("%c", c);
      
    }
-   print_keyboard_buffer(terminal[terminal_num].keyboard_buffer,terminal[terminal_num].buf_position);
+   /* print_keyboard_buffer(terminal[current_visible].keyboard_buffer,terminal[current_visible].buf_position); */
+   
+   //sti();
 }
 
 /*clear_buffer
@@ -176,11 +184,11 @@ void add_to_buffer(char c){
 void clear_buffer(){
    int i;
    
-   for(i=0;i<terminal[terminal_num].buf_position;i++){
-      terminal[terminal_num].keyboard_buffer[i] = NULL;
+   for(i=0;i<terminal[current_visible].buf_position;i++){
+      terminal[current_visible].keyboard_buffer[i] = NULL;
    }
-   terminal[terminal_num].buf_position = 0;
-   print_keyboard_buffer(terminal[terminal_num].keyboard_buffer,terminal[terminal_num].buf_position);
+   terminal[current_visible].buf_position = 0;
+   //print_keyboard_buffer(terminal[terminal_num].keyboard_buffer,terminal[terminal_num].buf_position);
 
 }
 /*copy_command_buffer

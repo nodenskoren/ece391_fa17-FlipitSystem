@@ -9,10 +9,28 @@
 
 //= terminal1,terminal2,terminal3;
 
-int32_t terminal_num = -1;
+int32_t terminal_num = 0;
 int32_t current_visible = 0;
 uint32_t esp;
 uint32_t ebp;
+
+void intialize_terminals();
+
+void intialize_terminals(){
+	int i;
+	for(i=0;i<3;i++){
+    terminal[i].current_pcb=NULL;
+	terminal[i].active_process=NULL;
+	terminal[i].previous_process=NULL;
+	terminal[i].esp=0;
+	terminal[i].ebp=0;
+	terminal[i].previous_buf_length=0;
+	terminal[i].buf_position=0;
+	terminal[i].screen_x=0;
+	terminal[i].screen_y=0;
+	}
+}
+	
 
 void scheduler() {
 	
@@ -24,11 +42,14 @@ void scheduler() {
 		: "memory"
 	);
 
-	
+	if(terminal_num==-1){
+			intialize_terminals();
+		}
 	terminal_num++;
 	terminal_num = terminal_num % 3;
 	
 	if(terminal[terminal_num].current_pcb == NULL) {
+		
 		terminal[terminal_num].esp = esp;
 		terminal[terminal_num].ebp = ebp;
 		term_page_switch();
@@ -87,4 +108,6 @@ void scheduler() {
 	send_eoi(0);
 	
 }
+
+	
 

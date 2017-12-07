@@ -8,10 +8,10 @@
 #define NUM_ROWS    25
 #define ATTRIB      0x7
 
-static int screen_x;
-static int screen_y;
+//static int screen_x;
+//static int screen_y;
 
-static int previous_buf_length=0;
+//static int previous_buf_length=0;
 
 
 static char* video_mem = (char *)VIDEO;
@@ -21,14 +21,15 @@ static char* video_mem = (char *)VIDEO;
  * Return Value: none
  * Function: Clears video memory */
 void clear(void) {
+	
     int32_t i;
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
         *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
     }
-	screen_x = 0;
-	screen_y = 0;
-	previous_buf_length = 0;
+	terminal[current_visible].screen_x = 0;
+	terminal[current_visible].screen_y = 0;
+	terminal[current_visible].previous_buf_length = 0;
 	
 	
 }
@@ -63,20 +64,20 @@ void print_keyboard_buffer(const uint8_t *buf,int buf_position){
 	   
 	   int i;
        /*moves print position back to where it was at prior print*/
-	   screen_x -=previous_buf_length;
+	   terminal[current_visible].screen_x -=terminal[current_visible].previous_buf_length;
 	   /*makes sure to decrement row if x counter goes negative*/
-	   if(screen_x < 0){
-         screen_y--;
-		 screen_x+=NUM_COLS;
+	   if(terminal[current_visible].screen_x < 0){
+         terminal[current_visible].screen_y--;
+		 terminal[current_visible].screen_x+=NUM_COLS;
 	   }
 	   /*sets everything to zero*/
-	   for(i=0;i<previous_buf_length;i++){
+	   for(i=0;i<terminal[current_visible].previous_buf_length;i++){
 	       
            printf(" ");
 		     
 		   }
 	   /*sets position back to zero and prints the buffer*/
-       screen_x -=previous_buf_length;
+       terminal[current_visible].screen_x -=terminal[current_visible].previous_buf_length;
         for(i=0; i<buf_position;i++){
 		   
            printf("%c",buf[i]);
@@ -84,7 +85,7 @@ void print_keyboard_buffer(const uint8_t *buf,int buf_position){
 		   
 		}
 		if(buf[i-1]!='\n')
-		  previous_buf_length = buf_position;
+		  terminal[current_visible].previous_buf_length = buf_position;
 
 }
 
@@ -219,25 +220,33 @@ void putc(uint8_t c) {
 
     if(c == '\n' || c == '\r') {
 	  
-        screen_y++;
-        screen_x = 0;
-		previous_buf_length = 0;
-		if(screen_y==NUM_ROWS)
+        terminal[current_visible].screen_y++;
+        terminal[current_visible].screen_x = 0;
+		terminal[current_visible].previous_buf_length = 0;
+		if(terminal[current_visible].screen_y==NUM_ROWS)
 		   scroll_the_page();
 		   
 
-    } else {
+    } 
+	else if(c =='\b'){
+		terminal[current_visible].screen_x--;
+		 *(uint8_t *)(video_mem + ((NUM_COLS * terminal[current_visible].screen_y + terminal[current_visible].screen_x) << 1)) = ' ';
+         *(uint8_t *)(video_mem + ((NUM_COLS * terminal[current_visible].screen_y + terminal[current_visible].screen_x) << 1) + 1) = ATTRIB;
+		 
+	}
+	
+	else {
 
-	    if(screen_x==80){
-          screen_y++;
-		  screen_x = 0;
-		  if(screen_y==NUM_ROWS)
+	    if(terminal[current_visible].screen_x==80){
+          terminal[current_visible].screen_y++;
+		  terminal[current_visible].screen_x = 0;
+		  if(terminal[current_visible].screen_y==NUM_ROWS)
 		    scroll_the_page();
 		}
 		
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
-        screen_x++;
+        *(uint8_t *)(video_mem + ((NUM_COLS * terminal[current_visible].screen_y + terminal[current_visible].screen_x) << 1)) = c;
+        *(uint8_t *)(video_mem + ((NUM_COLS * terminal[current_visible].screen_y + terminal[current_visible].screen_x) << 1) + 1) = ATTRIB;
+        terminal[current_visible].screen_x++;
     }
 }
 
@@ -334,7 +343,7 @@ void scroll_the_page(){
 		*(uint8_t *)(video_mem+((NUM_COLS * (NUM_ROWS-1) + x)<<1)+1) = ATTRIB;
 
 	 }
-	 screen_y--;
+	 terminal[current_visible].screen_y--;
 }
 
 /* void* memset(void* s, int32_t c, uint32_t n);
