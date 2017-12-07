@@ -164,7 +164,7 @@ cli();
   //printf("esp = %x\n", esp);
   //printf("ebp = %x\n", ebp);
 
-printf("reached here");
+
   i = 0;
   while(pid_array[i] == 1 && i< pid_size){
 	  i++;
