@@ -25,8 +25,13 @@ typedef struct terminal_t{
 	uint32_t ebp;
 	uint8_t keyboard_buffer[128];
 	int buf_position;
+	//temporary
+	uint32_t current_videomem;
 } terminal_t;
 
+
 terminal_t terminal[3];
+
+
 
 #endif

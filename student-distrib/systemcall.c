@@ -81,7 +81,7 @@ cli();
   {
     return -1;
   }
-
+  terminal[0].current_videomem = 0xB8000;
   // allocate a filename buffer
   //uint8_t filename_buf [file_length+1];
   uint8_t filename_buf[MAX_BUF_LENGTH];

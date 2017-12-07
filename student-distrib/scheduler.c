@@ -26,8 +26,12 @@ void scheduler() {
 	terminal_num = terminal_num % 3;
 	
 	if(terminal[terminal_num].current_pcb == NULL) {
+		terminal[0].current_videomem = 0xB8000;
+        terminal[1].current_videomem = 0xBA000;
+        terminal[2].current_videomem = 0xBB000;
 		terminal[terminal_num].esp = esp;
 		terminal[terminal_num].ebp = ebp;
+		send_eoi(0);
 		execute((uint8_t *)"shell");
 	}
 

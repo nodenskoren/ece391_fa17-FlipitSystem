@@ -14,13 +14,14 @@ static int screen_y;
 static int previous_buf_length=0;
 
 
-static char* video_mem = (char *)VIDEO;
+//static char* video_mem = (char *)VIDEO;
 
 /* void clear(void);
  * Inputs: void
  * Return Value: none
  * Function: Clears video memory */
 void clear(void) {
+	char* video_mem = (char*)terminal[terminal_num].current_videomem;
     int32_t i;
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
@@ -216,7 +217,7 @@ int32_t puts(int8_t* s) {
  * Return Value: void
  *  Function: Output a character to the console */
 void putc(uint8_t c) {
-
+    char* video_mem = (char*)terminal[terminal_num].current_videomem;
     if(c == '\n' || c == '\r') {
 	  
         screen_y++;
@@ -316,6 +317,7 @@ uint32_t strlen(const int8_t* s) {
  * SIDE EFFECT: all text moves up a line deleting the top line of text
  */
 void scroll_the_page(){
+	 char* video_mem = (char*)terminal[terminal_num].current_videomem;
      int x;
 	 int y;
 
@@ -558,6 +560,7 @@ int8_t* strncpy(int8_t* dest, const int8_t* src, uint32_t n) {
  * Return Value: void
  * Function: increments video memory. To be used to test rtc */
 void test_interrupts(void) {
+	char* video_mem = (char*)terminal[terminal_num].current_videomem;
     int32_t i;
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
         video_mem[i << 1]++;
