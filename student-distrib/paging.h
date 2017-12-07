@@ -72,5 +72,6 @@ extern void paging_init();
 extern void user_page_init(uint32_t process_num);
 extern void vidmap_page_initialization();
 extern void vidmap_desc_init();
-
+extern void term_page_switch(uint32_t term_num);
+extern void term_page_int();
 #endif

@@ -1,4 +1,4 @@
- 
+
 #include "paging.h"
 
 page_directory_entry page_directory[PAGE_DIRECTORY_SIZE] __attribute__((aligned(FOUR_KB)));
@@ -11,8 +11,8 @@ page_table_entry vidmap_page_table[PAGE_TABLE_SIZE] __attribute__((aligned(FOUR_
  *     input -- none
  *     output -- none
  */
- 
- 
+
+
 void video_table_init(){
 	int i;
 	// loop through the page table and set all the page entry to read write enabled
@@ -237,7 +237,7 @@ void vidmap_desc_init(){
  *     output -- none
  *     side effect -- inintialize vidmap table entries for backup terminal VGAs
  */
-/* void term_page_int()
+/*  void term_page_int()
 {
 		// initalize terminal 0 vga backup
 		video_page_table[term_zero_entry].base_address = (term_zero >> FOUR_KB_BINARY_DIGITS);
@@ -267,7 +267,7 @@ void vidmap_desc_init(){
 		vidmap_page_table[3].base_addr = (term_two >> FOUR_KB_BINARY_DIGITS);
 		vidmap_page_table[3].present_flag = 1;
 		vidmap_page_table[3].user_supervisor_flag = 1;
-}
+} */
 
 /*
  * term_page_switch
@@ -277,8 +277,8 @@ void vidmap_desc_init(){
  *     side effect -- copy the current vid memory into backup vga
  *     and then copy the back up vga into the current vga
  */
-/*
- void term_page_switch(uint32_t term_num)
+
+ /* void term_page_switch(uint32_t term_num)
 {
 		switch(CURRENT_VISIBLE)
 		{
@@ -286,20 +286,22 @@ void vidmap_desc_init(){
 					memcpy(VIDEO_MEMORY_ADDRESS, term_zero,FOUR_KB);
 					clear();
 					memcpy((185+term_num)*FOUR_KB,VIDEO_MEMORY_ADDRESS,FOUR_KB);
-					video_page_table[]
-					vidmap_page_table[1].base_addr = VIDEO_MEMORY_ADDRESS;
+					CURRENT_VISIBLE = term_num;
+					//vidmap_page_table[1].base_addr = VIDEO_MEMORY_ADDRESS;
 					break;
 				case 1:
 					memcpy(VIDEO_MEMORY_ADDRESS, term_one,FOUR_KB);
 					clear();
-					memcpy((185+term_num)*FOUR_KB,VIDEO_MEMORY_ADDRESS,FOUR_KB);
-					vidmap_page_table[2].base_addr = VIDEO_MEMORY_ADDRESS;
+					memcpy((185+term_num)*FOUR_KB,VIDEO_MEMORY_ADDRESS,FOUR_KB); = 2;
+          CURRENT_VISIBLE = term_num;
+					//vidmap_page_table[2].base_addr = VIDEO_MEMORY_ADDRESS;
 					break;
 				case 2:
 					memcpy(VIDEO_MEMORY_ADDRESS, term_two,FOUR_KB);
 					clear();
 					memcpy((185+term_num)*FOUR_KB,VIDEO_MEMORY_ADDRESS,FOUR_KB);
-					vidmap_page_table[3].base_addr = VIDEO_MEMORY_ADDRESS;
+          CURRENT_VISIBLE = term_num;
+					//vidmap_page_table[3].base_addr = VIDEO_MEMORY_ADDRESS;
 					break;
 
 		}
