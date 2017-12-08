@@ -109,7 +109,7 @@ cli();
 		j++;
 
   }
-  sti();
+  
   //printf("%c\n", command[i]);
   // if our filename doesnt end with space, the file name is illegal
   if(j> file_length)
@@ -212,7 +212,7 @@ cli();
   // setting up paging
   user_page_init(terminal[terminal_num].current_pcb->pid);
   //printf("pid: %d\n", current_pcb->pid);
-
+  cli();
   // store esp and ebp into pcb
   uint32_t esp = 0;
   uint32_t ebp = 0;
@@ -474,6 +474,7 @@ int32_t write_func(int32_t fd, void* buf, int32_t nbytes) {
  */
 
 int32_t halt (uint8_t status){
+	
 	ret_val = status;
 	int is_shell = 0;
 	//uint32_t retval = (uint32_t)status;
@@ -522,6 +523,7 @@ int32_t halt (uint8_t status){
 		execute((uint8_t *)"shell");
 	}
 	// jump to execute return
+	cli();
 
 	uint32_t esp = terminal[terminal_num].active_process->esp;
 			//printf("Output 8\n");
