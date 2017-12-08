@@ -225,7 +225,7 @@ void putc(uint8_t c) {
         terminal[terminal_num].screen_x = 0;
 		terminal[terminal_num].previous_buf_length = 0;
 		if(terminal[terminal_num].screen_y==NUM_ROWS)
-		   scroll_the_page();
+		   scroll_the_page(terminal_num);
 		   
 
     } 
@@ -242,7 +242,7 @@ void putc(uint8_t c) {
           terminal[terminal_num].screen_y++;
 		  terminal[terminal_num].screen_x = 0;
 		  if(terminal[terminal_num].screen_y==NUM_ROWS)
-		    scroll_the_page();
+		    scroll_the_page(terminal_num);
 		}
 		
         *(uint8_t *)(video_mem + ((NUM_COLS * terminal[terminal_num].screen_y + terminal[terminal_num].screen_x) << 1)) = c;
@@ -260,7 +260,7 @@ void putc_keyboard(uint8_t c) {
         terminal[current_visible].screen_x = 0;
 		terminal[current_visible].previous_buf_length = 0;
 		if(terminal[current_visible].screen_y==NUM_ROWS)
-		   scroll_the_page();
+		   scroll_the_page(current_visible);
 		   
 
     } 
@@ -277,7 +277,7 @@ void putc_keyboard(uint8_t c) {
           terminal[current_visible].screen_y++;
 		  terminal[current_visible].screen_x = 0;
 		  if(terminal[current_visible].screen_y==NUM_ROWS)
-		    scroll_the_page();
+		    scroll_the_page(scroll_the_page);
 		}
 		
         *(uint8_t *)(backdoor_address + ((NUM_COLS * terminal[current_visible].screen_y + terminal[current_visible].screen_x) << 1)) = c;
@@ -360,7 +360,7 @@ uint32_t strlen(const int8_t* s) {
  * OUTPUT: NONE
  * SIDE EFFECT: all text moves up a line deleting the top line of text
  */
-void scroll_the_page(){
+void scroll_the_page(int terminal_to_scroll){
      int x;
 	 int y;
 
@@ -379,7 +379,7 @@ void scroll_the_page(){
 		*(uint8_t *)(video_mem+((NUM_COLS * (NUM_ROWS-1) + x)<<1)+1) = ATTRIB;
 
 	 }
-	 terminal[current_visible].screen_y--;
+	 terminal[terminal_to_scroll].screen_y--;
 }
 
 /* void* memset(void* s, int32_t c, uint32_t n);
