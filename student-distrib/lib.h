@@ -17,7 +17,8 @@ uint32_t strlen(const int8_t* s);
 void clear(void);
 
 /*scrolls the screen when text reaches bottom*/
-void scroll_the_page(int terminal_to_scroll);
+void scroll_the_page();
+void scroll_the_page_keyboard();
 /*prints keyboard buffer*/
 //void print_keyboard_buffer(const uint8_t * buf,int buf_position);
 void putc_keyboard(uint8_t c);
