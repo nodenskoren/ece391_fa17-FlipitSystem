@@ -290,24 +290,24 @@ void vidmap_desc_init(){
 		switch(current_visible)
 		{
 				case 0:
-					memcpy( (void*)term_zero,(void*)TEST,FOUR_KB);
+					memcpy( (void*)term_zero,(void*)ALWAYS_VGA,FOUR_KB);
 					//clear();
-					memcpy((void*)TEST,(void*)((term_zero_entry+dest)*FOUR_KB),FOUR_KB);
+					memcpy((void*)ALWAYS_VGA,(void*)((term_zero_entry+dest)*FOUR_KB),FOUR_KB);
                     
 					current_visible = dest;
 					//term_page_switch(term_num);
 					break;
 				case 1:
-					memcpy( (void*)term_one,(void*)TEST,FOUR_KB);
+					memcpy( (void*)term_one,(void*)ALWAYS_VGA,FOUR_KB);
 					//clear();
-					memcpy((void*)TEST,(void*)((term_zero_entry+dest)*FOUR_KB),FOUR_KB);
+					memcpy((void*)ALWAYS_VGA,(void*)((term_zero_entry+dest)*FOUR_KB),FOUR_KB);
           current_visible = dest;
 					//vidmap_page_table[2].base_addr = VIDEO_MEMORY_ADDRESS; =
 					break;
 				case 2:
-					memcpy((void*)term_two,(void*)TEST, FOUR_KB);
+					memcpy((void*)term_two,(void*)ALWAYS_VGA, FOUR_KB);
 					//clear();
-					memcpy((void*)TEST,(void*)((term_zero_entry+dest)*FOUR_KB),FOUR_KB);
+					memcpy((void*)ALWAYS_VGA,(void*)((term_zero_entry+dest)*FOUR_KB),FOUR_KB);
 
           current_visible = dest;
 		  

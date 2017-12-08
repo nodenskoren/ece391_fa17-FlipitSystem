@@ -31,7 +31,7 @@
 #define term_one	0xBA000
 #define term_two	0xBB000
 #define back_door 	0xB8000
-#define TEST        0xBC000
+#define ALWAYS_VGA        0xBC000
 
 
 
