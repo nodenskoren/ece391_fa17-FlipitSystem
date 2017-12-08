@@ -28,11 +28,16 @@ void intialize_terminals(){
 	terminal[i].buf_position=0;
 	terminal[i].screen_x=0;
 	terminal[i].screen_y=0;
+	terminal[i].command_ready_flag = -1;
 	}
 }
 	
 
 void scheduler() {
+	
+	uint32_t flags;
+	cli_and_save(flags);
+	
 	
 	asm volatile(
 		"movl %%esp, %0     \n \
@@ -53,6 +58,7 @@ void scheduler() {
 		terminal[terminal_num].esp = esp;
 		terminal[terminal_num].ebp = ebp;
 		term_page_switch();
+		restore_flags(flags);
 		send_eoi(0);
 		execute((uint8_t *)"shell");
 	}
@@ -81,6 +87,7 @@ void scheduler() {
 			ebp = terminal[2].ebp;
 			tss.esp0 = terminal[1].current_pcb->esp0;
 			tss.ss0 = KERNEL_DS;
+			//execute((uint8_t*)"cat frame0.txt");
             break;			
 			
 		case 2:
@@ -93,6 +100,7 @@ void scheduler() {
 			ebp = terminal[0].ebp;
 			tss.esp0 = terminal[2].current_pcb->esp0;
 			tss.ss0 = KERNEL_DS;
+			//execute((uint8_t*)"ls");			
             break;			
 	}
 	
@@ -105,6 +113,7 @@ void scheduler() {
 		: "r" (esp),"r" (ebp)
 		: "memory"
 	);
+	restore_flags(flags);
 	send_eoi(0);
 	
 }

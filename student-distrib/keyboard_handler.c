@@ -66,18 +66,18 @@ int alt_flag = 0;
 void keyboard_interrupt_handler(){
 unsigned long flags;
 
+cli();
 
 /*used to check if input opcode is letter or number*/
 int is_letter(unsigned int c);
 
+sti();
 
-cli();
+cli_and_save(flags);
     unsigned int c = inb(KEYBOARD_PORT);
 	//printf("c: %x\n",c);
 	
-sti();
-        
-cli_and_save(flags);
+       
 
 	 if(c==ENTER_PRESSED){
 	      add_to_buffer(CARRIAGE_RETURN);

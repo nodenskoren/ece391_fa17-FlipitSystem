@@ -254,6 +254,11 @@ void vidmap_desc_init(){
 		video_page_table[term_two_entry].base_address = (term_two >> FOUR_KB_BINARY_DIGITS);
 		video_page_table[term_two_entry].present_flag = 1;
 		video_page_table[term_two_entry].user_supervisor_flag = 0;
+		
+		// initialize terminal backdoor
+		video_page_table[back_door_entry].base_address = (back_door >> FOUR_KB_BINARY_DIGITS);
+		video_page_table[back_door_entry].present_flag = 1;
+		video_page_table[back_door_entry].user_supervisor_flag = 0;
 
 		// initialize backup vidmap as well
 		// initialize terminal 0 vidmap backup
@@ -281,13 +286,14 @@ void vidmap_desc_init(){
 
  void term_visible_switch(uint32_t dest)
 {
+	cli();
 		switch(current_visible)
 		{
 				case 0:
 					memcpy( (void*)term_zero,(void*)VIDEO_MEMORY_ADDRESS,FOUR_KB);
 					//clear();
 					memcpy((void*)VIDEO_MEMORY_ADDRESS,(void*)((term_zero_entry+dest)*FOUR_KB),FOUR_KB);
-
+                    
 					current_visible = dest;
 					//term_page_switch(term_num);
 					break;
@@ -304,9 +310,12 @@ void vidmap_desc_init(){
 					memcpy((void*)VIDEO_MEMORY_ADDRESS,(void*)((term_zero_entry+dest)*FOUR_KB),FOUR_KB);
 
           current_visible = dest;
+		  
 					break;
 
 		}
+		term_page_switch();
+		sti();
 
 }
 

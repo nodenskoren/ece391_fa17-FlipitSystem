@@ -14,6 +14,7 @@
 #define term_zero_entry 185
 #define term_one_entry 186
 #define term_two_entry 187
+#define back_door_entry 188
 #define VIDEO_MEMORY_ADDRESS 0xB8000
 #define KERNEL_ADDRESS 0x400000
 #define EMPTY_ENTRY 0x00000002
@@ -29,6 +30,8 @@
 #define term_zero 0xB9000
 #define term_one	0xBA000
 #define term_two	0xBB000
+#define back_door 	0xB8000
+
 
 
 

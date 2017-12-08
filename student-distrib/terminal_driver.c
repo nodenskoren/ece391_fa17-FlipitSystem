@@ -27,7 +27,7 @@ int command_position = 0;
 char command_buf[MAX_NUM_COMMANDS];
 
 /*flag that lets read know a command is ready*/
-int command_ready_flag = -1;
+//int command_ready_flag = -1;
 
 /*terminal_open
  *Description: opens driver returns success
@@ -65,7 +65,7 @@ int32_t terminal_read(int32_t fd, char *buf, int32_t nbytes){
      if(buf==NULL) return -1;
      
     /*waits for flag to be set before returning*/
-    while(command_ready_flag==-1){}
+    while(terminal[terminal_num].command_ready_flag==-1){}
     cli();
     int i=0;
     
@@ -91,7 +91,7 @@ int32_t terminal_read(int32_t fd, char *buf, int32_t nbytes){
 	    command_position--;
 		
     }
-	command_ready_flag=-1;
+	terminal[terminal_num].command_ready_flag=-1;
 	
 	
     sti();
@@ -145,10 +145,10 @@ void add_to_buffer(char c){
    if(c=='\n'){
      terminal[current_visible].keyboard_buffer[terminal[current_visible].buf_position] = '\n';
      terminal[current_visible].buf_position++;
-	 printf("%c",'\n');
+	 putc_keyboard(c);
      //print_keyboard_buffer(terminal[current_visible].keyboard_buffer,terminal[current_visible].buf_position);
      copy_command_buffer();
-     command_ready_flag=1;
+     terminal[current_visible].command_ready_flag=1;
      clear_buffer();
      return;
    }
@@ -158,7 +158,7 @@ void add_to_buffer(char c){
 		 
        terminal[current_visible].buf_position -=1;
        terminal[current_visible].keyboard_buffer[terminal[current_visible].buf_position]=NULL;
-	   printf("%c",c);
+	   putc_keyboard(c);
      }
    }
    else if(terminal[current_visible].buf_position==127){
@@ -167,7 +167,7 @@ void add_to_buffer(char c){
    else{
      terminal[current_visible].keyboard_buffer[terminal[current_visible].buf_position] = c;
      terminal[current_visible].buf_position++;
-	 printf("%c", c);
+	 putc_keyboard(c);
      
    }
    /* print_keyboard_buffer(terminal[current_visible].keyboard_buffer,terminal[current_visible].buf_position); */
@@ -199,8 +199,8 @@ void clear_buffer(){
  */
 void copy_command_buffer(){
      int i;
-     for(i=0;i<terminal[terminal_num].buf_position;i++){
-         command_buf[command_position] = terminal[terminal_num].keyboard_buffer[i];
+     for(i=0;i<terminal[current_visible].buf_position;i++){
+         command_buf[command_position] = terminal[current_visible].keyboard_buffer[i];
 		 command_position++;
      }
 }

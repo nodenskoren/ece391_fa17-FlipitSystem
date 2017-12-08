@@ -173,9 +173,9 @@ void entry(unsigned long magic, unsigned long addr) {
     paging_init();
 	
 	
-	//pit_init();
+	pit_init();
 	
-	execute((uint8_t *)"shell");
+	//execute((uint8_t *)"shell");
 	
 
 #ifdef RUN_TESTS

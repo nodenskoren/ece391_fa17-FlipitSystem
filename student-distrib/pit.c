@@ -4,7 +4,7 @@
 #define PIT_CMB_VAL  0x36
 #define PIT_CH0_PORT 0x40
 #define PIT_CMD_PORT 0x43
-#define TWENTY_HZ        20
+#define Frequency        100
 #define MAX_PIT_FREQ 1193180
 #define EIGHT_BIT_MASK   0xFF
 #define EIGHT_BIT_SHIFT  8
@@ -37,7 +37,7 @@ void pit_init(){
 	outb(PIT_CMB_VAL, PIT_CMD_PORT);
 	
 	// calculate the dividor needed to set to the correct frequency
-	uint32_t dividor = (MAX_PIT_FREQ / TWENTY_HZ);
+	uint32_t dividor = (MAX_PIT_FREQ / Frequency);
 	
 	// set the frequency of the pit
 	outb((dividor & EIGHT_BIT_MASK), PIT_CH0_PORT);
