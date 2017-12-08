@@ -327,12 +327,25 @@ void vidmap_desc_init(){
  *     side effect -- copy the current vid memory into backup vga
  *     and then copy the back up vga into the current vga
  */
- void term_page_switch()
- {
-	 if(current_visible == terminal_num)
-	 video_page_table[VIDEO_MEMORY].base_address = VIDEO_MEMORY_ADDRESS>>12;
-	 //vidmap_page_table[1].base_addr = VIDEO_MEMORY_ADDRESS;
-	 else
-	 video_page_table[VIDEO_MEMORY].base_address = ((term_zero_entry+terminal_num)*FOUR_KB)>>12;
- 
- }
+void term_page_switch(){
+	if(current_visible == terminal_num) {
+		video_page_table[VIDEO_MEMORY].base_address = VIDEO_MEMORY_ADDRESS>>12;
+		//vidmap_page_table[1].base_addr = VIDEO_MEMORY_ADDRESS;
+		asm volatile (
+		"movl %%cr3, %%eax		\n\
+		 movl %%eax, %%cr3"
+		 : 									\
+		 : 									\
+		 : "memory", "cc");		\
+	}
+	else {
+		video_page_table[VIDEO_MEMORY].base_address = ((term_zero_entry+terminal_num)*FOUR_KB)>>12;
+		asm volatile (
+		"movl %%cr3, %%eax		\n\
+		 movl %%eax, %%cr3"
+		 : 									\
+		 : 									\
+		 : "memory", "cc");		\
+		 
+	}
+}
