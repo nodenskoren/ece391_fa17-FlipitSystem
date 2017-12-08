@@ -29,7 +29,7 @@ typedef struct terminal_t{
 	int buf_position;
 	int screen_x;
 	int screen_y;
-	int command_ready_flag;
+	volatile int command_ready_flag;
 } terminal_t;
 
 

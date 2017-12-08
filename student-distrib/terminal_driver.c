@@ -94,7 +94,7 @@ int32_t terminal_read(int32_t fd, char *buf, int32_t nbytes){
 	terminal[terminal_num].command_ready_flag=-1;
 	
 	
-    sti();
+    
     return i;
 }
 

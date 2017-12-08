@@ -9,14 +9,14 @@
 
 //= terminal1,terminal2,terminal3;
 
-int32_t terminal_num = 0;
+int32_t terminal_num = -1;
 int32_t current_visible = 0;
 uint32_t esp;
 uint32_t ebp;
 
-void intialize_terminals();
+void initalize_terminals();
 
-void intialize_terminals(){
+void initalize_terminals(){
 	int i;
 	for(i=0;i<3;i++){
     terminal[i].current_pcb=NULL;
@@ -48,7 +48,7 @@ void scheduler() {
 	);
 
 	if(terminal_num==-1){
-			intialize_terminals();
+			initalize_terminals();
 		}
 	terminal_num++;
 	terminal_num = terminal_num % 3;
