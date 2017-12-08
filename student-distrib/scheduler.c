@@ -68,12 +68,12 @@ void scheduler() {
 		    terminal[0].esp = esp;
 			terminal[0].ebp = ebp;
 			/* need init function */
-			user_page_init(terminal[0].current_pcb->pid);
+			user_page_init(terminal[0].active_process->pid);
 			term_page_switch();
 			/* restore in assembly later */
 			esp = terminal[1].esp;
 			ebp = terminal[1].ebp;
-			tss.esp0 = terminal[0].current_pcb->esp0;
+			tss.esp0 = terminal[0].active_process->esp0;
 			tss.ss0 = KERNEL_DS;
             break;			
 			
@@ -81,11 +81,11 @@ void scheduler() {
 			terminal[1].esp = esp;
 			terminal[1].ebp = ebp;
 			/* need init function */			
-			user_page_init(terminal[1].current_pcb->pid);
+			user_page_init(terminal[1].active_process->pid);
 			term_page_switch();
 			esp = terminal[2].esp;
 			ebp = terminal[2].ebp;
-			tss.esp0 = terminal[1].current_pcb->esp0;
+			tss.esp0 = terminal[1].active_process->esp0;
 			tss.ss0 = KERNEL_DS;
 			//execute((uint8_t*)"cat frame0.txt");
             break;			
@@ -94,11 +94,11 @@ void scheduler() {
 			terminal[2].esp = esp;
 			terminal[2].ebp = ebp;
 			/* need init function */			
-			user_page_init(terminal[2].current_pcb->pid);
+			user_page_init(terminal[2].active_process->pid);
 			term_page_switch();
 			esp = terminal[0].esp;
 			ebp = terminal[0].ebp;
-			tss.esp0 = terminal[2].current_pcb->esp0;
+			tss.esp0 = terminal[2].active_process->esp0;
 			tss.ss0 = KERNEL_DS;
 			//execute((uint8_t*)"ls");			
             break;			
