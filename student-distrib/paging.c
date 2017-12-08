@@ -330,6 +330,7 @@ void vidmap_desc_init(){
 void term_page_switch(){
 	if(current_visible == terminal_num) {
 		video_page_table[VIDEO_MEMORY].base_address = VIDEO_MEMORY_ADDRESS>>12;
+		vidmap_page_table[0].base_address = (VIDEO_MEMORY_ADDRESS >> FOUR_KB_BINARY_DIGITS);
 		//tlb flush
 		asm volatile (
 		"movl %%cr3, %%eax		\n\
@@ -340,6 +341,8 @@ void term_page_switch(){
 	}
 	else {
 		video_page_table[VIDEO_MEMORY].base_address = ((term_zero_entry+terminal_num)*FOUR_KB)>>12;
+		vidmap_page_table[0].base_address = ((term_zero_entry+terminal_num)*FOUR_KB)>>12;
+		
 		//tlb flush
 		asm volatile (
 		"movl %%cr3, %%eax		\n\
