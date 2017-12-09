@@ -210,7 +210,7 @@ cli();
   stdout_init(Stdout_FD);
 
   // setting up paging
-  user_page_init(terminal[terminal_num].current_pcb->pid);
+  user_page_init(terminal[terminal_num].active_process->pid);
   //printf("pid: %d\n", current_pcb->pid);
   cli();
   // store esp and ebp into pcb
@@ -229,13 +229,13 @@ cli();
   if(terminal[terminal_num].active_process->parent_pcb != NULL){
 	  //printf("output I\n");
 	  //current_pcb->parent_pcb = (pcb_t*)(eightmeg_page - (active_process->pid) * eightkilo_page );
-	  terminal[terminal_num].current_pcb->esp = esp;
-	  terminal[terminal_num].current_pcb->ebp = ebp;
+	  terminal[terminal_num].active_process->esp = esp;
+	  terminal[terminal_num].active_process->ebp = ebp;
   }
 
   else{
 	  //printf("output II\n");
-	  terminal[terminal_num].current_pcb->parent_pcb = NULL;
+	  terminal[terminal_num].active_process->parent_pcb = NULL;
   }
 
 
@@ -251,8 +251,8 @@ cli();
   // update tss before iret
   tss.esp0 = (eightmeg_page - i * eightkilo_page - four_bytes);
   tss.ss0 = KERNEL_DS;
-  terminal[terminal_num].current_pcb->esp0 = tss.esp0;
-  terminal[terminal_num].current_pcb->ss0	= tss.ss0;
+  terminal[terminal_num].active_process->esp0 = tss.esp0;
+  terminal[terminal_num].active_process->ss0	= tss.ss0;
   //active_process = current_pcb;
 
 asm volatile (
