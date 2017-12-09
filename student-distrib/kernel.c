@@ -174,6 +174,14 @@ void entry(unsigned long magic, unsigned long addr) {
 	
 	
 	pit_init();
+
+    /* play beep sound at bpptup */	
+	play_sound(1000);
+	int i;
+	for(i = 0; i < 10000000; i++){
+	}
+	nosound();
+    pit_freq_change(20);
 	
 	//execute((uint8_t *)"shell");
 	
