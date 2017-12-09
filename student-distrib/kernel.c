@@ -172,16 +172,17 @@ void entry(unsigned long magic, unsigned long addr) {
     /*init paging*/
     paging_init();
 	
-	
-	pit_init();
-
-    /* play beep sound at bpptup */	
+    /* play beep sound at bootup */	
 	play_sound(1000);
 	int i;
 	for(i = 0; i < 10000000; i++){
 	}
 	nosound();
     pit_freq_change(20);
+
+	
+	pit_init();
+
 	
 	//execute((uint8_t *)"shell");
 	
