@@ -31,7 +31,7 @@
  *   SIDE EFFECTS: none
  */
  
-volatile int RTC_flag = 0;
+//volatile int RTC_flag = 0;
  
 int32_t RTC_open(const uint8_t* filename){
 	
@@ -81,7 +81,9 @@ void RTC_interrupt_handler(){
 	outb(REG_C, REG_NUM_PORT);            // select register C
 	cli_and_save(flags);                                // make sure the loading is protected
 	inb(IO_PORT);                         // just throw away contents
-	RTC_flag = 0;
+	terminal[0].RTC_flag = 0;
+	terminal[1].RTC_flag = 0;
+	terminal[2].RTC_flag = 0;
 	restore_flags(flags);        
 	
 	send_eoi(IRQ_RTC_NUM);                // send EOI
@@ -102,9 +104,9 @@ void RTC_interrupt_handler(){
 int32_t RTC_read(int32_t fd, void* buf, int32_t nbytes){
 	uint32_t flags;
 	cli_and_save(flags);    
-	RTC_flag = 1;  // sets the flag to be cleared by another RTC inpterrupt
+	terminal[terminal_num].RTC_flag = 1;  // sets the flag to be cleared by another RTC inpterrupt
 	restore_flags(flags);  
- 	while(RTC_flag){
+ 	while(terminal[terminal_num].RTC_flag){
 		//printf("%d", RTC_flag);
 	}
 

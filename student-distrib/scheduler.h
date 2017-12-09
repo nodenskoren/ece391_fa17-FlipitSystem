@@ -30,6 +30,7 @@ typedef struct terminal_t{
 	int screen_x;
 	int screen_y;
 	volatile int command_ready_flag;
+	volatile int RTC_flag;
 } terminal_t;
 
 

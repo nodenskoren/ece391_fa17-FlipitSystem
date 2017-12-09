@@ -29,6 +29,7 @@ void initalize_terminals(){
 	terminal[i].screen_x=0;
 	terminal[i].screen_y=0;
 	terminal[i].command_ready_flag = -1;
+	terminal[i].RTC_flag = 0;
 	}
 }
 	
