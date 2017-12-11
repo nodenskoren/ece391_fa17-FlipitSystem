@@ -257,8 +257,8 @@ int32_t execute(const uint8_t * command){
  *		INPUTS: fd (the desired index of the file descriptor table to read the file from)
  *              buf (buffer containing the contents to read to file)
  *              nbytes (how many bytes to read)
- *		OUTPUTS: none
- *		SIDE EFFECT: none
+ *		OUTPUTS: -1 if FAILURE, 0 if SUCCESS
+ *		SIDE EFFECT: fd's file tracker will get incremented
  *
  */
 int32_t read(int32_t fd, void* buf, int32_t nbytes) {
@@ -279,7 +279,6 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes) {
 		return FAILURE;
 
 	/* Error checking ends */
-
 	return read_func(fd, buf, nbytes);
 }
 
@@ -289,7 +288,7 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes) {
  *		INPUTS: fd (the desired index of the file descriptor table to write the buffer to)
  *              buf (buffer containing the contents to write to file)
  *              nbytes (how many bytes to write)
- *		OUTPUTS: none
+ *		OUTPUTS: -1 if FAILURE, 0 if SUCCESS
  *		SIDE EFFECT: none
  *
  */
@@ -321,13 +320,12 @@ int32_t write(int32_t fd, void* buf, int32_t nbytes) {
  * open
  *		DESCRIPTION: Open a file at a free entry inside the file descriptor table
  *		INPUTS: filename (desided filename to open)
- *		OUTPUTS: none
+ *		OUTPUTS: -1 if FAILURE, fd number if SUCCESS
  *		SIDE EFFECT: A new entry will be turned active and associated to
  *                   the new file if there file descriptor table is not fully loaded.
  *
  */
 int32_t open(const uint8_t* filename) {
-	//printf("FILE_OPEN!_1");
 	pcb_t* curr_process = terminal[terminal_num].active_process;
 	file_t* fds = curr_process->file_descriptor_table;
 	dentry_t d_entry;
@@ -337,8 +335,6 @@ int32_t open(const uint8_t* filename) {
 	while(fds[fd].active != INACTIVE) {
 		fd++;
 	}
-	//printf("FILE_OPEN!_2");
-
 
 	/* If file descriptor table is fully loaded already, return failure */
 	if(fd <= FD_MAX && read_dentry_by_name(filename, &d_entry) >= NOT_END_OF_FILE_OR_FAILURE) {
@@ -415,7 +411,7 @@ int32_t close(int32_t fd) {
  *		INPUTS: fd (the desired index of the file descriptor table to write the buffer to)
  *              buf (buffer containing the contents to write to file)
  *              nbytes (how many bytes to write)
- *		OUTPUTS: none
+ *		OUTPUTS: return the read function result
  *		SIDE EFFECT: none
  *
  */
@@ -430,7 +426,7 @@ int32_t read_func(int32_t fd, void* buf, int32_t nbytes) {
  *		INPUTS: fd (the desired index of the file descriptor table to write the buffer to)
  *              buf (buffer containing the contents to write to file)
  *              nbytes (how many bytes to write)
- *		OUTPUTS: none
+ *		OUTPUTS: return the write function result
  *		SIDE EFFECT: none
  *
  */
