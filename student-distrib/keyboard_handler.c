@@ -20,6 +20,9 @@
 #define CARRIAGE_RETURN       0x0A
 #define  ALT_PRESSED          0x38
 #define  ALT_RELEASED         0xB8
+#define F1 0x3B
+#define F2 0x3C
+#define F3 0x3D
 
 
 
@@ -79,7 +82,7 @@ cli_and_save(flags);
 	
        
 
-	 if(c==ENTER_PRESSED){
+	if(c==ENTER_PRESSED){
 	      add_to_buffer(CARRIAGE_RETURN);
 	}
 	else if(c==TAB_OPCODE){
@@ -164,41 +167,42 @@ cli_and_save(flags);
 	    else{
                  if(!(is_letter(c))){
                     if(right_shift_flag | left_shift_flag){
-		      add_to_buffer(keyboard_mapping_capital[c]);
-		    }
+						add_to_buffer(keyboard_mapping_capital[c]);
+					}
 		   
-		    else{
-		      add_to_buffer(keyboard_mapping_lowercase[c]);
-		   }
-		  }    
-                 else{
-		     if(right_shift_flag | left_shift_flag){
+					else{
+						add_to_buffer(keyboard_mapping_lowercase[c]);
+					}
+				}    
+                else{
+					if(right_shift_flag | left_shift_flag){
                         add_to_buffer(keyboard_mapping_lowercase[c]);
-	             }
+					}
 
 		 
-		     else{
-		        add_to_buffer(keyboard_mapping_capital[c]);
-		     }
-		 }
+					else{
+					add_to_buffer(keyboard_mapping_capital[c]);
+					}
+				}
 	    }
 	}
-	/*triggers clear when control and "L" pressed*/
+	/* triggers clear when control and "L" pressed */
 	else if(c == OPCODE_L && control_flag==1){
-              clear();
-	      clear_buffer();
+		clear();
+		clear_buffer();
 	}
+	/* triggers terminal switch if F1, F2, or F3 key is pressed when the alt key is pressed */
 	else if(alt_flag==1){
-		if(c==0x3B){
-			//printf("f1");
+		if(c == F1){
+			/* switch to terminal 0 */
 			term_visible_switch(0);
 		}
-		else if(c==0x3C){
-			//printf("f2");
+		else if(c == F2){
+			/* switch to terminal 1 */
 			term_visible_switch(1);
 		}
-		else if(c==0x3D){
-			//printf("f3");
+		else if(c == F3){
+			/* switch to terminal 2 */
 			term_visible_switch(2);
 		}
 	}
@@ -283,21 +287,4 @@ unsigned char keyboard_mapping_capital[MAPPING_SIZE] = {
 	0x3E,0x3F,0x00,0x2A,0x00,0x20,0x00
 
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

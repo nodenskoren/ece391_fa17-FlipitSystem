@@ -11,8 +11,6 @@ page_table_entry vidmap_page_table[PAGE_TABLE_SIZE] __attribute__((aligned(FOUR_
  *     input -- none
  *     output -- none
  */
-
-
 void video_table_init(){
 	int i;
 	// loop through the page table and set all the page entry to read write enabled
@@ -259,77 +257,64 @@ void vidmap_desc_init(){
 		video_page_table[back_door_entry].base_address = (back_door >> FOUR_KB_BINARY_DIGITS);
 		video_page_table[back_door_entry].present_flag = 1;
 		video_page_table[back_door_entry].user_supervisor_flag = 0;
-
-		// initialize backup vidmap as well
-		// initialize terminal 0 vidmap backup
-		vidmap_page_table[1].base_address = (term_zero >> FOUR_KB_BINARY_DIGITS);
-		vidmap_page_table[1].present_flag = 1;
-		vidmap_page_table[1].user_supervisor_flag = 1;
-		// initialize terminal 1 vidmap backup
-		vidmap_page_table[2].base_address = (term_one >> FOUR_KB_BINARY_DIGITS);
-		vidmap_page_table[2].present_flag = 1;
-		vidmap_page_table[2].user_supervisor_flag = 1;
-		// initialize terminal 2 vidmap backup
-		vidmap_page_table[3].base_address = (term_two >> FOUR_KB_BINARY_DIGITS);
-		vidmap_page_table[3].present_flag = 1;
-		vidmap_page_table[3].user_supervisor_flag = 1;
 }
 
 /*
- * term_page_switch
- *     helper function to initialize the backups for terminal VGA
+ * term_visible_switch
+ *     Description: helper function to initialize the backups for terminal VGA
  *     input -- term_num: the terminal number that we want to swtich to
  *     output -- none
  *     side effect -- copy the current vid memory into backup vga
  *     and then copy the back up vga into the current vga
  */
-
- void term_visible_switch(uint32_t dest)
-{
-	cli();
-		switch(current_visible)
-		{
+ void term_visible_switch(uint32_t dest) {
+	 
+		cli();
+		switch(current_visible){
 				case 0:
-					memcpy( (void*)term_zero,(void*)ALWAYS_VGA,FOUR_KB);
-					//clear();
+					/* copy the swapped out screen into the backup memory */
+					memcpy((void*)term_zero, (void*)ALWAYS_VGA, FOUR_KB);
+					/* load the screen being swapped in from the backup memory */
 					memcpy((void*)ALWAYS_VGA,(void*)((term_zero_entry+dest)*FOUR_KB),FOUR_KB);
-                    
+                    /* set the swapped in screen as current */
 					current_visible = dest;
-					//term_page_switch(term_num);
 					break;
 				case 1:
+					/* copy the swapped out screen into the backup memory */
 					memcpy( (void*)term_one,(void*)ALWAYS_VGA,FOUR_KB);
-					//clear();
+					/* load the screen being swapped in from the backup memory */
 					memcpy((void*)ALWAYS_VGA,(void*)((term_zero_entry+dest)*FOUR_KB),FOUR_KB);
-          current_visible = dest;
-					//vidmap_page_table[2].base_addr = VIDEO_MEMORY_ADDRESS; =
+                    /* set the swapped in screen as current */
+					current_visible = dest;
 					break;
 				case 2:
-					memcpy((void*)term_two,(void*)ALWAYS_VGA, FOUR_KB);
-					//clear();
-					memcpy((void*)ALWAYS_VGA,(void*)((term_zero_entry+dest)*FOUR_KB),FOUR_KB);
-
-          current_visible = dest;
-		  
+					/* copy the swapped out screen into the backup memory */				
+					memcpy((void*)term_two, (void*)ALWAYS_VGA, FOUR_KB);
+					/* load the screen being swapped in from the backup memory */
+					memcpy((void*)ALWAYS_VGA, (void*)((term_zero_entry + dest) * FOUR_KB), FOUR_KB);
+                    /* set the swapped in screen as current */
+					current_visible = dest;
 					break;
 
 		}
 		term_page_switch();
 		//sti();
-
 }
 
 /*
  * term_page_switch
- *     helper function to initialize the backups for terminal VGA
- *     input -- term_num: the terminal number that we want to swtich to
+ *     helper function to switch the page mapping for terminals
+ *     input -- none
  *     output -- none
- *     side effect -- copy the current vid memory into backup vga
- *     and then copy the back up vga into the current vga
+ *     side effect -- if the process runs in the terminal being shown, map it to the VGA address.
+ *                    otherwise the process is mapped to their corresponding backup terminal memories.
  */
 void term_page_switch(){
+	/* if the process runs in the same terminal as the terminal being shown */
 	if(current_visible == terminal_num) {
-		video_page_table[VIDEO_MEMORY].base_address = VIDEO_MEMORY_ADDRESS>>12;
+		/* set the base address to the address of the VGA */
+		video_page_table[VIDEO_MEMORY].base_address = VIDEO_MEMORY_ADDRESS >> 12;
+		/* and map the vidmap system call's address to the VGA */
 		vidmap_page_table[0].base_address = (VIDEO_MEMORY_ADDRESS >> FOUR_KB_BINARY_DIGITS);
 		//tlb flush
 		asm volatile (
@@ -339,10 +324,11 @@ void term_page_switch(){
 		 : 									\
 		 : "memory", "cc");		\
 	}
+	
+	/* otherwise the backup */
 	else {
-		video_page_table[VIDEO_MEMORY].base_address = ((term_zero_entry+terminal_num)*FOUR_KB)>>12;
-		vidmap_page_table[0].base_address = ((term_zero_entry+terminal_num)*FOUR_KB)>>12;
-		
+		video_page_table[VIDEO_MEMORY].base_address = ((term_zero_entry + terminal_num) * FOUR_KB) >> 12;
+		vidmap_page_table[0].base_address = ((term_zero_entry + terminal_num) * FOUR_KB) >> 12;
 		//tlb flush
 		asm volatile (
 		"movl %%cr3, %%eax		\n\

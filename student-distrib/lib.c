@@ -52,45 +52,6 @@ void clear(void) {
  *       the beginning), but I think it's more flexible this way.
  *       Also note: %x is the only conversion specifier that can use
  *       the "#" modifier to alter output. */
-
-/* print_keyboard_buffer
- * DESCRIPTION: Used to print currently typed strings
- * INPUT: buf--array of chars to print
- *        buf_position--number of bytes in buf to print
- * OUTPUT: NONE
- * SIDE_EFFCT: Prints current text buffer contents to display
- */
-/* void print_keyboard_buffer(const uint8_t *buf,int buf_position){
-        
-	   
-	   int i;
-       /*moves print position back to where it was at prior print*/
-	//   terminal[terminal_num].screen_x -=terminal[terminal_num].previous_buf_length;
-	   /*makes sure to decrement row if x counter goes negative*/
-	 /*   if(terminal[current_visible].screen_x < 0){
-         terminal[current_visible].screen_y--;
-		 terminal[current_visible].screen_x+=NUM_COLS;
-	   } */
-	   /*sets everything to zero*/
-	 //  for(i=0;i<terminal[current_visible].previous_buf_length;i++){
-	       
-      //     printf(" ");
-		     
-		//   }
-	   /*sets position back to zero and prints the buffer*/
-      /*  terminal[current_visible].screen_x -=terminal[current_visible].previous_buf_length;
-        for(i=0; i<buf_position;i++){
-		   
-           printf("%c",buf[i]);
-		   
-		   
-		}
-		if(buf[i-1]!='\n')
-		  terminal[current_visible].previous_buf_length = buf_position;
-
-} */ 
-
-
 int32_t printf(int8_t *format, ...) {
 
     /* Pointer to the format string */
