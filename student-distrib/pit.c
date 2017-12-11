@@ -108,7 +108,7 @@ void pit_freq_change(uint32_t nFrequence){
  	uint8_t tmp;
  
         //Set the PIT to the desired frequency
- 	Div = PIT_MAX_FREQ / nFrequence;
+ 	Div = MAX_PIT_FREQ / nFrequence;
  	outb(PIT_CST, PIT_CMD_PORT);
  	outb((uint8_t) (Div), PIT_SD_PORT);
  	outb((uint8_t) (Div >> EB_SHIFT), PIT_SD_PORT);
