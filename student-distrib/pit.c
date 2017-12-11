@@ -4,12 +4,19 @@
 #define PIT_CMB_VAL  0x36
 #define PIT_CH0_PORT 0x40
 #define PIT_CMD_PORT 0x43
+#define PIT_SD_PORT  0x42
+#define PIT_CST      0xb6
 #define Frequency        100
 #define MAX_PIT_FREQ 1193180
 #define EIGHT_BIT_MASK   0xFF
 #define EIGHT_BIT_SHIFT  8
 #define PIT_IRQ_NUM  0
 #define PIT_ENTRY    0x20
+#define IOPORT 0x61
+#define IOMASK 0xFC
+#define PIT_AD      3
+#define EB_SHIFT    8
+
 
 /*
  * pit_init
@@ -81,9 +88,9 @@ void pit_handler(){
 
 void pit_freq_change(uint32_t nFrequence){
 	
- 	uint32_t Div = 1193180 / nFrequence;
- 	outb((uint8_t) (Div), 0x42);
- 	outb((uint8_t) (Div >> 8), 0x42);	
+ 	uint32_t Div = MAX_PIT_FREQ / nFrequence;
+ 	outb((uint8_t) (Div), PIT_SD_PORT);
+ 	outb((uint8_t) (Div >> EB_SHIFT), PIT_SD_PORT);	
 	
 }
 
@@ -101,15 +108,15 @@ void pit_freq_change(uint32_t nFrequence){
  	uint8_t tmp;
  
         //Set the PIT to the desired frequency
- 	Div = 1193180 / nFrequence;
- 	outb(0xb6, 0x43);
- 	outb((uint8_t) (Div), 0x42);
- 	outb((uint8_t) (Div >> 8), 0x42);
+ 	Div = PIT_MAX_FREQ / nFrequence;
+ 	outb(PIT_CST, PIT_CMD_PORT);
+ 	outb((uint8_t) (Div), PIT_SD_PORT);
+ 	outb((uint8_t) (Div >> EB_SHIFT), PIT_SD_PORT);
  
         //And play the sound using the PC speaker
- 	tmp = inb(0x61);
-  	if (tmp != (tmp | 3)) {
- 		outb( tmp | 3, 0x61);
+ 	tmp = inb(IOPORT);
+  	if (tmp != (tmp | PIT_AD)) {
+ 		outb( tmp | PIT_AD, IOPORT);
  	}
  }
  
@@ -122,9 +129,9 @@ void pit_freq_change(uint32_t nFrequence){
  *   SIDE EFFECTS: none
  */
  void nosound() {
- 	uint8_t tmp = inb(0x61) & 0xFC;
+ 	uint8_t tmp = inb(IOPORT) & IOMASK;
  
- 	outb(tmp, 0x61);
+ 	outb(tmp, IOPORT);
  }
  
 
