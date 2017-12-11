@@ -143,10 +143,10 @@ void paging_init() {
 		: "eax", "cc", "memory"); \
 }
 
-/* user_page_add(uint32_t address, uint32_t process_num)
- * initialize a user page
- * input -- none
- * output -- index for the free page descriptor
+/* user_page_add( uint32_t process_num)
+ * initialize a user page and map it based on its pid
+ * input -- index for the free page descriptor
+ * output -- none
  */
 void user_page_init(uint32_t process_num)
 {
@@ -313,7 +313,7 @@ void term_page_switch(){
 	/* if the process runs in the same terminal as the terminal being shown */
 	if(current_visible == terminal_num) {
 		/* set the base address to the address of the VGA */
-		video_page_table[VIDEO_MEMORY].base_address = VIDEO_MEMORY_ADDRESS >> 12;
+		video_page_table[VIDEO_MEMORY].base_address = VIDEO_MEMORY_ADDRESS >> FOUR_KB_BINARY_DIGITS;
 		/* and map the vidmap system call's address to the VGA */
 		vidmap_page_table[0].base_address = (VIDEO_MEMORY_ADDRESS >> FOUR_KB_BINARY_DIGITS);
 		//tlb flush
@@ -327,8 +327,8 @@ void term_page_switch(){
 	
 	/* otherwise the backup */
 	else {
-		video_page_table[VIDEO_MEMORY].base_address = ((term_zero_entry + terminal_num) * FOUR_KB) >> 12;
-		vidmap_page_table[0].base_address = ((term_zero_entry + terminal_num) * FOUR_KB) >> 12;
+		video_page_table[VIDEO_MEMORY].base_address = ((term_zero_entry + terminal_num) * FOUR_KB) >> FOUR_KB_BINARY_DIGITS;
+		vidmap_page_table[0].base_address = ((term_zero_entry + terminal_num) * FOUR_KB) >> FOUR_KB_BINARY_DIGITS;
 		//tlb flush
 		asm volatile (
 		"movl %%cr3, %%eax		\n\

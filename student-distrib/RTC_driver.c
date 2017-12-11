@@ -26,8 +26,7 @@
  * RTC_open
  *   DESCRIPTION: Opens the RTC file. Sets the frequency to 2Hz default.
  *   INPUTS: filename - filename of RTC
- *   OUTPUTS: none
- *   RETURN VALUE: none
+ *   OUTPUTS: always return success
  *   SIDE EFFECTS: none
  */
  
@@ -70,7 +69,6 @@ int32_t RTC_open(const uint8_t* filename){
  *   DESCRIPTION: Interrupt handler for RTC.
  *   INPUTS: none
  *   OUTPUTS: none
- *   RETURN VALUE: none
  *   SIDE EFFECTS: prints out stuff onto screen showing that RTC interrupt works
  */
 
@@ -96,9 +94,9 @@ void RTC_interrupt_handler(){
  *   INPUTS: fd - file descriptor
 			 buf
 			 nbytes - frequency to be written to RTC
- *   OUTPUTS: none
+ *   OUTPUTS: always success
  *   RETURN VALUE: none
- *   SIDE EFFECTS: none
+ *   SIDE EFFECTS: disable interrupts and enable interrupts again
  */
 
 int32_t RTC_read(int32_t fd, void* buf, int32_t nbytes){
@@ -110,16 +108,17 @@ int32_t RTC_read(int32_t fd, void* buf, int32_t nbytes){
 		//printf("%d", RTC_flag);
 	}
 
-    return 0;
+    return SUCCESS;
 }
 
 /*
  * RTC_write
  *   DESCRIPTION: changes the frequency of RTC interrupts. 
- *   INPUTS: filename 
- *   OUTPUTS: none
- *   RETURN VALUE: none
- *   SIDE EFFECTS: none
+ *   INPUTS: fd - file descriptor index
+ *			 buf - buffer to read into	
+ *			 nbytes - number of bytes to read
+ *   OUTPUTS: -1 if fails, 0 if success
+ *   SIDE EFFECTS: rewrite buffer based on frequency stored in buffer
  */
 
 int32_t RTC_write(int32_t fd, const uint32_t* buf, int32_t nbytes){
@@ -161,7 +160,7 @@ int32_t RTC_write(int32_t fd, const uint32_t* buf, int32_t nbytes){
 /*
  * RTC_close
  *   DESCRIPTION: closes the RTC file.
- *   INPUTS: ffd - file descriptor
+ *   INPUTS: fd - file descriptor
  *   OUTPUTS: none
  *   RETURN VALUE: none
  *   SIDE EFFECTS: none
