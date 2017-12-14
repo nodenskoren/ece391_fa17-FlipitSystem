@@ -17,6 +17,8 @@
 #define PIT_AD      3
 #define EB_SHIFT    8
 
+/* PIT functionality is inspired from OSDev! */
+
 
 /*
  * pit_init
